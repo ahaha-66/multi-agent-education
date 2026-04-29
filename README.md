@@ -73,6 +73,18 @@
 | **Hint Agent (提示)** | 分级提示：暗示→引导→直接答案 | 三级提示策略、尝试次数分析 |
 | **Engagement Agent (互动)** | 监测学习状态，适时鼓励、调整节奏 | 情感分析、响应时间分析 |
 
+
+#### ============二创=================
+| Agent | 订阅事件 | 处理逻辑 |
+|-------|------|---------------|
+| **Assessment Agent (评估)** | STUDENT_SUBMISSION①、STUDENT_QUESTION② | ①更新master分数、发布MASTERY_UPDATED（如果mastery < 0.3 且 attempts >= 3发布WEAKNESS_DETECTED）、发布ASSESSMENT_COMPLETE ②获取当前mastery状态、发布ASSESSMENT_COMPLETE|
+| **Tutor Agent (教学)** | ASSESSMENT_COMPLETE①、STUDENT_MESSAGE②、HINT_RESPONSE③、ENGAGEMENT_ALERT④ | ①根据 mastery和 level选择不同的prompt。如果答错>=2，发布HINT_NEEDED，否则，生成教学回复（正确：问深层问题；错误：引导思考），发布TEACHING_RESPONSE ②获取当前mastery，生成回复，发布TEACHING_RESPONSE ③转发Hint Agent的回复给学生，发布TEACHING_RESPONSE ④响应警报，调整教学难度|
+| **Curriculum Agent (课程)** | STUDENT_SUBMISSION①、ASSESSMENT_COMPLETE②、STUDENT_MESSAGE③ | ①更新时间戳、记录是否正确、响应时间、更新连续错误/正确数、保持最近 20 条记录窗口 ②检测当前学习状态，如果状态改变记录日志，根据新状态触发干预 ③更新last_activity和交互计数|
+| **Hint Agent (提示)** | HINT_NEEDED① | ①根据 mastery、attempts和level生成分级提示，发布HINT_RESPONSE|
+| **Engagement Agent (互动)** |MASTERY_UPDATED①、WEAKNESS_DETECTED②、PACE_ADJUSTMENT③ |①将mastery转换成0-5评分，获取或创建该知识点的复习项，用 SM-2 算法更新复习间隔（如果 mastery >= 0.6：检查知识图谱，找出已掌握知识点的下一个可学节点，发布 NEXT_TOPIC 事件），发送复习计划，发布REVIEW_SCHEDULED ②查询知识图谱，从薄弱知识点回溯，找出补救路径，发布PATH_UPDATED ③调整学习节奏|
+
+====================================================
+
 ### 为什么用 Mesh + 事件驱动？
 
 | 编排模式 | 特点 | 适用场景 |
