@@ -24,30 +24,39 @@ logger = logging.getLogger(__name__)
 
 
 class EventType(str, Enum):
-    """系统中所有事件类型的枚举定义。"""
+    """系统中所有事件类型的枚举定义 - 5G通信诊断版本。"""
 
-    # 学生交互事件
-    STUDENT_SUBMISSION = "student.submission"
-    STUDENT_QUESTION = "student.question"
-    STUDENT_MESSAGE = "student.message"
+    # 工程师交互事件
+    PROBLEM_REPORTED = "engineer.problem_reported"
+    CONTEXT_PROVIDED = "engineer.context_provided"
+    HINT_REQUESTED = "engineer.hint_requested"
 
-    # Assessment Agent 事件
-    ASSESSMENT_COMPLETE = "assessment.complete"
-    MASTERY_UPDATED = "assessment.mastery_updated"
-    WEAKNESS_DETECTED = "assessment.weakness_detected"
+    # Diagnosis Agent 事件
+    DIAGNOSIS_STARTED = "diagnosis.started"
+    DIAGNOSIS_COMPLETE = "diagnosis.complete"
+    HYPOTHESIS_GENERATED = "diagnosis.hypothesis_generated"
+    ROOT_CAUSE_IDENTIFIED = "diagnosis.root_cause_identified"
 
-    # Tutor Agent 事件
-    TEACHING_RESPONSE = "tutor.teaching_response"
-    HINT_NEEDED = "tutor.hint_needed"
-    DIFFICULTY_ADJUSTED = "tutor.difficulty_adjusted"
+    # Solution Advisor Agent 事件
+    SOLUTION_RECOMMENDED = "solution.recommended"
+    IMPLEMENTATION_GUIDANCE = "solution.implementation_guidance"
+    VERIFICATION_COMPLETE = "solution.verification_complete"
 
-    # Curriculum Agent 事件
-    PATH_UPDATED = "curriculum.path_updated"
-    REVIEW_SCHEDULED = "curriculum.review_scheduled"
-    NEXT_TOPIC = "curriculum.next_topic"
+    # Knowledge Agent 事件
+    KNOWLEDGE_QUERY = "knowledge.query"
+    LEARNING_MATERIAL_PROVIDED = "knowledge.learning_material_provided"
+    LEARNING_PATH_UPDATED = "knowledge.learning_path_updated"
 
-    # Hint Agent 事件
-    HINT_RESPONSE = "hint.response"
+    # Debug Agent 事件
+    VERIFICATION_STARTED = "debug.verification_started"
+    VERIFICATION_STEP_RESULT = "debug.verification_step_result"
+    SOLUTION_VALIDATED = "debug.solution_validated"
+
+    # Growth Agent 事件
+    COMPETENCY_UPDATED = "growth.competency_updated"
+    MILESTONE_ACHIEVED = "growth.milestone_achieved"
+    PROBLEM_RESOLVED = "growth.problem_resolved"
+    ENGINEER_LEVEL_UP = "growth.engineer_level_up"
 
     # Engagement Agent 事件
     ENGAGEMENT_ALERT = "engagement.alert"

@@ -1,0 +1,191 @@
+{
+  "metadata": {
+    "system": "5G NR (New Radio) RAN Troubleshooting & Optimization",
+    "version": "1.0",
+    "target_users": "Junior Engineers (<1 year experience)",
+    "domains": ["干扰诊断", "容量评估", "覆盖优化", "规划演进"],
+    "bands": ["NSA (NR+LTE)", "SA (Standalone NR)"]
+  },
+  "concepts": {
+    "signal_strength": {
+      "id": "sig_strength",
+      "name": "信号强度基础",
+      "domain": "物理层基础",
+      "difficulty": 0.2,
+      "description": "RSRP/RSSI/RSRQ/SS-SINR的含义和范围",
+      "prerequisites": [],
+      "related_problems": ["coverage_gap", "weak_coverage"]
+    },
+    "sinr_definition": {
+      "id": "sinr_def",
+      "name": "SINR原理",
+      "domain": "物理层基础",
+      "difficulty": 0.3,
+      "description": "信干噪比公式：P_signal/(P_interference+P_noise)",
+      "prerequisites": ["sig_strength"],
+      "related_problems": ["rf_interference", "capacity_issue"]
+    },
+    "interference_types": {
+      "id": "interference_types",
+      "name": "干扰分类",
+      "domain": "干扰诊断",
+      "difficulty": 0.4,
+      "description": "同频、邻频、带外、多径干扰",
+      "prerequisites": ["sinr_def"],
+      "related_problems": ["co_channel_interference", "adjacent_channel_interference"]
+    },
+    "co_channel_interference": {
+      "id": "co_channel",
+      "name": "同频干扰排查",
+      "domain": "干扰诊断",
+      "difficulty": 0.5,
+      "description": "同频基站之间的干扰诊断方法",
+      "prerequisites": ["interference_types"],
+      "related_problems": []
+    },
+    "adjacent_channel_interference": {
+      "id": "adj_channel",
+      "name": "邻频干扰排查",
+      "domain": "干扰诊断",
+      "difficulty": 0.5,
+      "description": "相邻频段杂散信号检测与排查",
+      "prerequisites": ["interference_types"],
+      "related_problems": []
+    },
+    "power_control": {
+      "id": "power_ctrl",
+      "name": "功率控制",
+      "domain": "参数优化",
+      "difficulty": 0.5,
+      "description": "PCMAX、PCMIN、功率与干扰的权衡",
+      "prerequisites": ["sinr_def"],
+      "related_problems": ["interference_mitigation", "coverage_issue"]
+    },
+    "beam_forming": {
+      "id": "beamform",
+      "name": "波束成形",
+      "domain": "天线技术",
+      "difficulty": 0.6,
+      "description": "Massive MIMO波束赋形原理与调优",
+      "prerequisites": [],
+      "related_problems": ["coverage_gap", "interference_issue"]
+    },
+    "capacity_planning": {
+      "id": "capacity_plan",
+      "name": "容量规划基础",
+      "domain": "容量评估",
+      "difficulty": 0.4,
+      "description": "5G容量计算、流量模型、过载识别",
+      "prerequisites": [],
+      "related_problems": ["congestion", "overload"]
+    },
+    "prb_allocation": {
+      "id": "prb_alloc",
+      "name": "资源分配",
+      "domain": "容量评估",
+      "difficulty": 0.5,
+      "description": "物理资源块(PRB)分配策略",
+      "prerequisites": ["capacity_plan"],
+      "related_problems": ["congestion"]
+    },
+    "harq_management": {
+      "id": "harq",
+      "name": "HARQ管理",
+      "domain": "可靠性",
+      "difficulty": 0.6,
+      "description": "混合自动重传请求配置与重传风暴",
+      "prerequisites": [],
+      "related_problems": ["packet_loss", "retransmission_storm"]
+    },
+    "handover_optimization": {
+      "id": "handover",
+      "name": "切换优化",
+      "domain": "移动性",
+      "difficulty": 0.6,
+      "description": "切换参数调优、乒乓效应、边界处理",
+      "prerequisites": [],
+      "related_problems": ["handover_failure", "ping_pong"]
+    },
+    "cell_identity_offset": {
+      "id": "cell_offset",
+      "name": "小区偏置",
+      "domain": "负载均衡",
+      "difficulty": 0.5,
+      "description": "CIO参数调优进行负载均衡",
+      "prerequisites": ["handover"],
+      "related_problems": ["load_imbalance"]
+    },
+    "spectrum_planning": {
+      "id": "spectrum_plan",
+      "name": "频率规划",
+      "domain": "规划演进",
+      "difficulty": 0.6,
+      "description": "NSA/SA频率规划、共存策略",
+      "prerequisites": [],
+      "related_problems": []
+    },
+    "nsa_sa_coexistence": {
+      "id": "nsa_sa_mix",
+      "name": "NSA/SA共存",
+      "domain": "规划演进",
+      "difficulty": 0.7,
+      "description": "双连接、辅助小区配置",
+      "prerequisites": ["spectrum_plan"],
+      "related_problems": []
+    }
+  },
+  "problem_categories": {
+    "rf_interference": {
+      "id": "rf_interference",
+      "name": "射频干扰",
+      "subcategories": [
+        "co_channel_interference",
+        "adjacent_channel_interference"
+      ],
+      "priority": "high",
+      "frequency": "common"
+    },
+    "coverage_issue": {
+      "id": "coverage_issue",
+      "name": "覆盖问题",
+      "subcategories": [
+        "coverage_gap",
+        "weak_coverage",
+        "signal_fluctuation"
+      ],
+      "priority": "high",
+      "frequency": "common"
+    },
+    "capacity_issue": {
+      "id": "capacity_issue",
+      "name": "容量问题",
+      "subcategories": [
+        "congestion",
+        "overload",
+        "resource_exhaustion"
+      ],
+      "priority": "high",
+      "frequency": "medium"
+    },
+    "reliability_issue": {
+      "id": "reliability_issue",
+      "name": "可靠性问题",
+      "subcategories": [
+        "packet_loss",
+        "retransmission_storm"
+      ],
+      "priority": "medium",
+      "frequency": "medium"
+    },
+    "mobility_issue": {
+      "id": "mobility_issue",
+      "name": "移动性问题",
+      "subcategories": [
+        "handover_failure",
+        "ping_pong"
+      ],
+      "priority": "medium",
+      "frequency": "medium"
+    }
+  }
+}

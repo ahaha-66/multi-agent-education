@@ -17,14 +17,14 @@ import logging
 from abc import ABC, abstractmethod
 
 from core.event_bus import Event, EventBus, EventType
-from core.learner_model import LearnerModel
+from core.engineer_profile import EngineerProfile
 
 logger = logging.getLogger(__name__)
 
 
 class BaseAgent(ABC):
     """
-    Agent 基类。
+    Agent 基类 - 5G通信诊断系统版。
 
     子类需要实现：
     - subscribed_events: 返回自己订阅的事件类型列表
@@ -35,11 +35,11 @@ class BaseAgent(ABC):
         self,
         name: str,
         event_bus: EventBus,
-        learner_models: dict[str, LearnerModel],
+        engineer_profiles: dict[str, EngineerProfile],
     ) -> None:
         self.name = name
         self.event_bus = event_bus
-        self.learner_models = learner_models
+        self.engineer_profiles = engineer_profiles
         self._register_handlers()
         logger.info("[%s] Agent initialized", self.name)
 
@@ -60,18 +60,18 @@ class BaseAgent(ABC):
         """子类实现事件处理逻辑。"""
         ...
 
-    async def emit(self, event_type: EventType, learner_id: str, data: dict) -> None:
+    async def emit(self, event_type: EventType, engineer_id: str, data: dict) -> None:
         """便捷方法：发布事件。"""
         event = Event(
             type=event_type,
             source=self.name,
-            learner_id=learner_id,
+            learner_id=engineer_id,
             data=data,
         )
         await self.event_bus.publish(event)
 
-    def get_learner_model(self, learner_id: str) -> LearnerModel:
-        """获取学习者模型，不存在则创建。"""
-        if learner_id not in self.learner_models:
-            self.learner_models[learner_id] = LearnerModel(learner_id)
-        return self.learner_models[learner_id]
+    def get_engineer_profile(self, engineer_id: str) -> EngineerProfile:
+        """获取工程师资料，不存在则创建。"""
+        if engineer_id not in self.engineer_profiles:
+            self.engineer_profiles[engineer_id] = EngineerProfile(engineer_id=engineer_id)
+        return self.engineer_profiles[engineer_id]

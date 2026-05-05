@@ -1,0 +1,434 @@
+{
+  "case_library": [
+    {
+      "case_id": "5G_INT_001",
+      "title": "城区基站丢包率突增 - 邻频干扰",
+      "difficulty": "easy",
+      "category": "干扰诊断",
+      "scenario": {
+        "location": "城市CBD",
+        "base_station": "Cell_A (n78)",
+        "band": "n78 (3.5GHz)",
+        "antenna": "64T64R Massive MIMO",
+        "environment": "urban",
+        "weather": "sunny",
+        "time": "10:00",
+        "adjacent_cell": "Cell_B (1.75GHz LTE)"
+      },
+      "problem_statement": {
+        "symptom": "丢包率从2% 突增到 15%",
+        "duration": "30分钟前突发，无渐进过程",
+        "affected_area": "整个基站覆盖范围",
+        "affected_users": "所有UE",
+        "traffic": "正常水平"
+      },
+      "symptoms": {
+        "kpi_changes": {
+          "packet_loss_rate": "2% → 15%",
+          "sinr": "8dB → 2dB",
+          "rsrp": "正常，无明显变化",
+          "available_prb": "充足，无过载迹象"
+        },
+        "indicators": [
+          "SINR急剧下降",
+          "所有UE同时受影响",
+          "仅限特定频段"
+        ]
+      },
+      "diagnosis": {
+        "root_cause": "邻频干扰 - Cell_B 1.75GHz LTE功率泄漏到n78频段",
+        "mechanism": "发射机滤波器衰减失效导致杂散信号超标",
+        "confidence": 0.87,
+        "differential_diagnosis": [
+          {
+            "hypothesis": "基站过载",
+            "likelihood": "低(10%)",
+            "reasoning": "PRB充足，流量正常"
+          },
+          {
+            "hypothesis": "硬件故障",
+            "likelihood": "低(3%)",
+            "reasoning": "症状集中于特定频段，非硬件普遍故障"
+          }
+        ]
+      },
+      "diagnosis_steps": [
+        {
+          "step": 1,
+          "name": "现象分类",
+          "action": "观察KPI变化模式",
+          "result": "SINR下降 + 所有UE受影响 → 排除单UE问题"
+        },
+        {
+          "step": 2,
+          "name": "排除容量问题",
+          "action": "检查PRB占用率、队列长度",
+          "result": "PRB占用40% < 80% 警告线 → 非过载"
+        },
+        {
+          "step": 3,
+          "name": "排除功率问题",
+          "action": "查看Cell_A的PCMAX配置",
+          "result": "正常配置，无异常改动 → 非本小区功率问题"
+        },
+        {
+          "step": 4,
+          "name": "检验干扰假设",
+          "action": "用频谱仪在1.7-1.9GHz扫描",
+          "result": "1.75GHz发现 -55dBm 信号(正常应<-90dBm) → 确认邻频干扰"
+        }
+      ],
+      "background_knowledge": {
+        "concept": "SINR与信干噪比",
+        "formula": "SINR = P_desired / (P_interference + P_noise)",
+        "explanation": "干扰强度增加 → SINR下降 → MAC层重传增加 → 丢包率上升",
+        "threshold": {
+          "sinr_good": "> 10dB",
+          "sinr_acceptable": "5-10dB",
+          "sinr_poor": "< 0dB (基本无法通信)"
+        }
+      },
+      "solutions": [
+        {
+          "type": "immediate_mitigation",
+          "name": "功率控制快速缓解",
+          "objective": "立即降低丢包率，防止用户投诉",
+          "steps": [
+            {
+              "step": 1,
+              "action": "登录基站网管，进入Cell_A配置",
+              "detail": "路径: [网管] → [基站配置] → [射频参数] → [功率控制]"
+            },
+            {
+              "step": 2,
+              "action": "调整PCMAX从-72dBm 降低到 -77dBm",
+              "detail": "降低Cell_A发射功率 → 自身辐射噪声减少 → SINR有所改善",
+              "expected_impact": "SINR ↑ 2-3dB, 丢包率 ↓ 到 5-8%"
+            },
+            {
+              "step": 3,
+              "action": "启用ICIC(干扰协调)模式",
+              "detail": "配置参数: eICIC_enabled=True, 配置进制化器",
+              "expected_impact": "分时/分频设置避免同时发射 → 进一步缓解"
+            },
+            {
+              "step": 4,
+              "action": "监控效果",
+              "detail": "观察丢包率、SINR曲线，3-5分钟内应有明显改善"
+            }
+          ],
+          "time_to_implement": "10-15分钟",
+          "effectiveness": "80% (临时缓解，但可工作)",
+          "side_effects": "覆盖范围可能略下降2-3%",
+          "risk_level": "低"
+        },
+        {
+          "type": "permanent_solution",
+          "name": "滤波器硬件升级（永久解决）",
+          "objective": "根除邻频干扰根源",
+          "steps": [
+            {
+              "step": 1,
+              "action": "现场勘测" ,
+              "detail": "工程师前往Cell_B基站，用频谱仪精确测量1.75GHz杂散发射",
+              "verification": "确认杂散信号 > -60dBm(规范要求<-90dBm)"
+            },
+            {
+              "step": 2,
+              "action": "拆卸故障滤波器",
+              "detail": "停止Cell_B服务 → 打开机柜 → 定位发射链路滤波器 → 拆卸"
+            },
+            {
+              "step": 3,
+              "action": "安装新滤波器",
+              "detail": "规格: LTE Band 3 (1.75GHz±10MHz) 滤波器，型号: XXX",
+              "source": "采购部或原厂"
+            },
+            {
+              "step": 4,
+              "action": "验证",
+              "detail": "重新启动Cell_B → 用频谱仪验证1.75GHz杂散 < -90dBm"
+            }
+          ],
+          "time_to_implement": "2-3天(含采购、派单)",
+          "effectiveness": "100% (根除)",
+          "side_effects": "无",
+          "cost": "约8万元(滤波器+安装)",
+          "risk_level": "低"
+        }
+      ],
+      "verification": {
+        "method": "KPI监控",
+        "expected_results": {
+          "packet_loss_rate": "< 2%",
+          "sinr": "> 5dB",
+          "user_complaints": "下降"
+        },
+        "monitoring_period": "30分钟(缓解) 或 永久(硬件)"
+      },
+      "learning_outcomes": [
+        "理解SINR公式及干扰的实际影响",
+        "掌握邻频干扰的诊断思路",
+        "学会功率控制作为快速缓解手段",
+        "了解硬件升级的成本-效益权衡"
+      ],
+      "tools_used": [
+        "频谱仪(现场)",
+        "网管系统(远程配置)",
+        "KPI监控面板"
+      ],
+      "related_concepts": [
+        "sinr_def",
+        "interference_types",
+        "adj_channel",
+        "power_ctrl"
+      ],
+      "follow_up": {
+        "question": "如果功率下降导致覆盖边界恶化，如何通过其他手段弥补？",
+        "hint": "考虑波束赋形或天线增益优化"
+      }
+    },
+    {
+      "case_id": "5G_CAP_001",
+      "title": "工作日晚高峰基站拥塞 - 容量评估",
+      "difficulty": "medium",
+      "category": "容量评估",
+      "scenario": {
+        "location": "商业中心/写字楼区",
+        "base_station": "Cell_C (n78+n79)",
+        "bands": ["n78 (3.5GHz)", "n79 (4.9GHz)"],
+        "antenna": "n78: 64T64R, n79: 32T32R",
+        "time": "18:00-20:00 (晚高峰)",
+        "traffic_type": "视频流、下班开放应用"
+      },
+      "problem_statement": {
+        "symptom": "晚高峰时期用户速率明显下降，卡顿投诉增加",
+        "duration": "每日18:00-20:00持续发生",
+        "affected_users": "约30% 的用户",
+        "peak_traffic": "1.2 Tbps/sector"
+      },
+      "symptoms": {
+        "kpi_changes": {
+          "prb_utilization": "n78: 95%, n79: 87%",
+          "queue_length": "平均 150+",
+          "throughput": "下降 40%",
+          "bler": "上升到7%(正常2-3%)"
+        }
+      },
+      "diagnosis": {
+        "root_cause": "容量瓶颈 - 高峰期PRB资源不足，且频谱资源分配不均",
+        "mechanism": "n78频段过载(95% PRB占用)，n79分流不足(87%)",
+        "confidence": 0.92
+      },
+      "solutions": [
+        {
+          "type": "short_term",
+          "name": "负载均衡调优",
+          "steps": [
+            {
+              "step": 1,
+              "action": "调整小区偏置(CIO) 参数",
+              "detail": "将部分UE从n78引导到n79,降低n78压力",
+              "parameter": "CIO_n78_to_n79 = +3dB"
+            },
+            {
+              "step": 2,
+              "action": "优化资源调度算法",
+              "detail": "切换到'公平性优先'模式，避免某些用户长期占用资源"
+            }
+          ],
+          "effectiveness": "60-70%"
+        },
+        {
+          "type": "medium_term",
+          "name": "频谱扩容规划",
+          "steps": [
+            {
+              "step": 1,
+              "action": "申请额外的n78或n79频谱",
+              "detail": "向监管部门、运营商申请频率资源"
+            },
+            {
+              "step": 2,
+              "action": "载波聚合(CA)配置",
+              "detail": "配置2个n78CC + 1个n79CC,理论容量增加3倍"
+            }
+          ],
+          "effectiveness": "200-300%",
+          "cost": "频谱成本+基站升级"
+        }
+      ],
+      "learning_outcomes": [
+        "理解PRB(物理资源块)与容量的关系",
+        "掌握容量瓶颈的识别方法",
+        "学会负载均衡和资源调优",
+        "理解频谱规划的重要性"
+      ]
+    },
+    {
+      "case_id": "5G_COV_001",
+      "title": "城中村弱覆盖 - 信号波动大",
+      "difficulty": "easy",
+      "category": "覆盖优化",
+      "scenario": {
+        "location": "城中村，密集楼群",
+        "base_station": "Cell_D (n78)",
+        "problematic_area": "Cell_D与相邻Cell_E之间的交界区域",
+        "rsrp_range": "-125 to -90dBm (波动大)"
+      },
+      "problem_statement": {
+        "symptom": "信号强度在-90到-125dBm之间波动，导致频繁切换",
+        "duration": "特定区域长期存在",
+        "affected_users": "步行/车辆用户"
+      },
+      "root_cause": "建筑物遮挡 + 多径衰减，导致信号强弱不均",
+      "solutions": [
+        {
+          "type": "antenna_optimization",
+          "name": "天线方向调优",
+          "action": "调整Cell_D和Cell_E的天线俯仰角/方位角",
+          "expected_result": "覆盖均匀度提升，信号波动减少"
+        },
+        {
+          "type": "site_planning",
+          "name": "新增补点站",
+          "action": "在城中村内新增低功率基站(DBS/室分)",
+          "expected_result": "覆盖盲点消除"
+        }
+      ]
+    },
+    {
+      "case_id": "5G_RET_001",
+      "title": "MAC层重传风暴 - 可靠性问题",
+      "difficulty": "medium",
+      "category": "可靠性",
+      "scenario": {
+        "location": "雨雪天气区域",
+        "base_station": "Cell_E",
+        "weather": "heavy_rain"
+      },
+      "problem_statement": {
+        "symptom": "MAC层重传率从5% 升到 40%，导致延迟增加5倍",
+        "duration": "与降雨时间相关"
+      },
+      "root_cause": "天线/馈线接触不良导致BLER升高，或SINR因雨衰下降",
+      "diagnosis_steps": [
+        {
+          "step": 1,
+          "action": "检查天气数据",
+          "result": "确认是否与降雨相关"
+        },
+        {
+          "step": 2,
+          "action": "检查馈线和连接器",
+          "result": "发现某天线馈线接触不良"
+        }
+      ],
+      "solutions": [
+        {
+          "type": "maintenance",
+          "action": "现场检修馈线接触，重新拧紧连接器"
+        },
+        {
+          "type": "optimization",
+          "action": "在HARQ参数中增加重传次数上限，设置超时退出机制"
+        }
+      ]
+    },
+    {
+      "case_id": "5G_HOF_001",
+      "title": "高速铁路切换失败问题",
+      "difficulty": "hard",
+      "category": "移动性",
+      "scenario": {
+        "location": "高速铁路沿线",
+        "speed": "300+ km/h",
+        "base_stations": ["Cell_F → Cell_G → Cell_H"]
+      },
+      "problem_statement": {
+        "symptom": "列车通过Cell_F和Cell_G交界时，多次切换失败，通话中断",
+        "duration": "每趟列车都会发生"
+      },
+      "root_cause": "高速移动场景下切换超时 + 测量报告延迟",
+      "diagnosis_steps": [
+        "收集切换失败的日志，分析切换触发时刻",
+        "对比基站之间的距离/功率覆盖范围",
+        "评估切换预留时间是否足够"
+      ],
+      "solutions": [
+        {
+          "action": "提前触发切换(Early HO)",
+          "parameter": "A3偏置增加，提早发起切换准备"
+        },
+        {
+          "action": "增加基站间距的重叠覆盖",
+          "detail": "提升功率或调整天线以增加重叠区域宽度"
+        }
+      ]
+    },
+    {
+      "case_id": "5G_INT_002",
+      "title": "同频干扰 - 相邻小区问题",
+      "difficulty": "medium",
+      "category": "干扰诊断",
+      "scenario": {
+        "location": "规划密集区",
+        "cell_layout": "Cell_X 与 Cell_Y 同频(n78)仅1.5km距离"
+      },
+      "problem_statement": {
+        "symptom": "Cell边界区功率受限用户SINR极低(<2dB)",
+        "affected_area": "Cell_X与Cell_Y交界线两侧"
+      },
+      "root_cause": "同频基站干扰 + 功率限制",
+      "solutions": [
+        {
+          "type": "frequency_replan",
+          "action": "重新规划频率，Cell_X用n78+n79,Cell_Y用n79"
+        },
+        {
+          "type": "power_optimization",
+          "action": "在Cell边界配置功率受限下行链路"
+        },
+        {
+          "type": "cio_optimization",
+          "action": "调整CIO参数平衡两小区"
+        }
+      ]
+    },
+    {
+      "case_id": "5G_NSA_SA_001",
+      "title": "NSA/SA共存 - 辅助小区自动激活问题",
+      "difficulty": "hard",
+      "category": "规划演进",
+      "scenario": {
+        "mode": "NSA (NR+LTE双连接)",
+        "primary_cell": "LTE (Band 3)",
+        "secondary_cell": "NR (n78)"
+      },
+      "problem_statement": {
+        "symptom": "部分UE无法激活NR辅助小区，困在LTE速率",
+        "affected_users": "约20%"
+      },
+      "root_cause": "辅助小区激活配置错误或条件未满足",
+      "diagnosis_steps": [
+        "检查LTE主小区是否正确指定了NR辅助小区",
+        "检查UE能力(UE capability)是否支持双连接",
+        "检查RRC连接信息是否正确下发"
+      ],
+      "solutions": [
+        {
+          "action": "修正辅助小区配置",
+          "detail": "进入网管,确保 scell_nr78_enabled=True"
+        },
+        {
+          "action": "提低激活条件",
+          "detail": "降低激活触发的SINR阈值,使更多UE能激活"
+        },
+        {
+          "action": "固件升级",
+          "detail": "基站或UE固件版本太旧,升级到最新版本"
+        }
+      ]
+    }
+  ]
+}
