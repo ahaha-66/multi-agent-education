@@ -82,11 +82,17 @@ class EventBus:
     4. 支持事件过滤和优先级（可选扩展）
     """
 
-    def __init__(self, max_history_per_learner: int = 200, max_global_history: int = 2000) -> None:
+    def __init__(
+        self,
+        max_history_per_learner: int = 200,
+        max_global_history: int = 2000,
+        event_sink: EventHandler | None = None,
+    ) -> None:
         self._subscribers: dict[EventType, list[EventHandler]] = {}
         self._event_history_by_learner: dict[str, deque[Event]] = {}
         self._event_history_global: deque[Event] = deque(maxlen=max_global_history)
         self._max_history_per_learner = max_history_per_learner
+        self._event_sink = event_sink
         self._lock = asyncio.Lock()
 
     def subscribe(self, event_type: EventType, handler: EventHandler) -> None:
@@ -115,6 +121,12 @@ class EventBus:
                     maxlen=self._max_history_per_learner
                 )
             self._event_history_by_learner[event.learner_id].append(event)
+
+        if self._event_sink:
+            try:
+                await self._event_sink(event)
+            except Exception:
+                logger.exception("Error in event sink for event %s", event.type.value)
 
         logger.info(
             "[EventBus] %s -> %s (learner=%s)",

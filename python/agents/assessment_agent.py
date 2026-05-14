@@ -53,6 +53,7 @@ class AssessmentAgent(BaseAgent):
         data = event.data
         knowledge_id = data.get("knowledge_id", "")
         is_correct = data.get("is_correct", False)
+        time_spent_seconds = data.get("time_spent_seconds", 0)
         correlation_id = event.correlation_id
 
         model = self.get_learner_model(learner_id)
@@ -68,6 +69,8 @@ class AssessmentAgent(BaseAgent):
                 "attempts": state.attempts,
                 "streak": state.streak,
                 "confidence": state.confidence,
+                "is_correct": is_correct,
+                "time_spent_seconds": time_spent_seconds,
             },
             correlation_id=correlation_id,
         )

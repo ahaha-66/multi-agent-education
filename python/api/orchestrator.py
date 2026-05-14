@@ -7,8 +7,11 @@ Agent 编排器 -- 初始化所有Agent并连接到EventBus。
 3. 提供对外接口供API层调用
 """
 
-from core.event_bus import EventBus, Event, EventType
+from config.settings import settings
+from core.event_bus import Event, EventBus, EventType
 from core.learner_model import LearnerModel
+from db.persistence import PersistenceService
+from db.session import create_engine, create_sessionmaker
 from agents import (
     AssessmentAgent,
     TutorAgent,
@@ -22,7 +25,10 @@ class AgentOrchestrator:
     """Agent编排器：管理所有Agent和共享状态。"""
 
     def __init__(self) -> None:
-        self.event_bus = EventBus()
+        self._engine = create_engine(settings.database_url)
+        self._sessionmaker = create_sessionmaker(self._engine)
+        self.persistence = PersistenceService(self._sessionmaker)
+        self.event_bus = EventBus(event_sink=self.persistence.log_event)
         self.learner_models: dict[str, LearnerModel] = {}
 
         self.assessment = AssessmentAgent(
@@ -51,6 +57,17 @@ class AgentOrchestrator:
             learner_models=self.learner_models,
         )
 
+    async def shutdown(self) -> None:
+        await self._engine.dispose()
+
+    async def _ensure_loaded(self, learner_id: str) -> None:
+        await self.persistence.touch_learner(learner_id)
+        if learner_id not in self.learner_models:
+            self.learner_models[learner_id] = await self.persistence.load_learner_model(learner_id)
+        if learner_id not in self.curriculum.get_review_items_map():
+            items = await self.persistence.load_review_items(learner_id)
+            self.curriculum.set_review_items(learner_id, items)
+
     async def submit_answer(
         self,
         learner_id: str,
@@ -60,6 +77,14 @@ class AgentOrchestrator:
         correlation_id: str | None = None,
     ) -> list[Event]:
         """学生提交答案 -> 触发完整的Agent处理链。"""
+        await self._ensure_loaded(learner_id)
+        await self.persistence.record_attempt(
+            learner_id,
+            knowledge_id,
+            is_correct,
+            time_spent_seconds=time_spent,
+            correlation_id=correlation_id,
+        )
         event = Event(
             type=EventType.STUDENT_SUBMISSION,
             source="api",
@@ -72,12 +97,15 @@ class AgentOrchestrator:
             correlation_id=correlation_id,
         )
         await self.event_bus.publish(event)
+        await self.persistence.save_learner_model(self.learner_models[learner_id])
+        await self.persistence.save_review_items(learner_id, self.curriculum.get_review_items(learner_id))
         return self.event_bus.get_history(learner_id=learner_id, limit=20)
 
     async def ask_question(
         self, learner_id: str, knowledge_id: str, question: str, correlation_id: str | None = None
     ) -> list[Event]:
         """学生提问 -> 触发Assessment + Tutor处理。"""
+        await self._ensure_loaded(learner_id)
         event = Event(
             type=EventType.STUDENT_QUESTION,
             source="api",
@@ -86,6 +114,8 @@ class AgentOrchestrator:
             correlation_id=correlation_id,
         )
         await self.event_bus.publish(event)
+        await self.persistence.save_learner_model(self.learner_models[learner_id])
+        await self.persistence.save_review_items(learner_id, self.curriculum.get_review_items(learner_id))
         return self.event_bus.get_history(learner_id=learner_id, limit=20)
 
     async def send_message(
@@ -96,6 +126,7 @@ class AgentOrchestrator:
         correlation_id: str | None = None,
     ) -> list[Event]:
         """学生发送消息 -> 触发Tutor对话。"""
+        await self._ensure_loaded(learner_id)
         event = Event(
             type=EventType.STUDENT_MESSAGE,
             source="api",
@@ -104,13 +135,16 @@ class AgentOrchestrator:
             correlation_id=correlation_id,
         )
         await self.event_bus.publish(event)
+        await self.persistence.save_learner_model(self.learner_models[learner_id])
+        await self.persistence.save_review_items(learner_id, self.curriculum.get_review_items(learner_id))
         return self.event_bus.get_history(learner_id=learner_id, limit=20)
 
-    def get_learner_progress(self, learner_id: str) -> dict:
+    async def get_learner_progress(self, learner_id: str) -> dict:
         """获取学习者进度。"""
-        if learner_id not in self.learner_models:
+        await self.persistence.touch_learner(learner_id)
+        model = await self.persistence.load_learner_model(learner_id)
+        if not model.knowledge_states:
             return {"learner_id": learner_id, "status": "no_data"}
-        model = self.learner_models[learner_id]
         return {
             "learner_id": learner_id,
             "progress": model.get_overall_progress(),

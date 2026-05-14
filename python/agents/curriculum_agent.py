@@ -33,6 +33,15 @@ class CurriculumAgent(BaseAgent):
         self.sr = SpacedRepetition()
         self._review_items: dict[str, dict[str, ReviewItem]] = {}
 
+    def set_review_items(self, learner_id: str, items: dict[str, ReviewItem]) -> None:
+        self._review_items[learner_id] = items
+
+    def get_review_items(self, learner_id: str) -> dict[str, ReviewItem]:
+        return self._review_items.get(learner_id, {})
+
+    def get_review_items_map(self) -> dict[str, dict[str, ReviewItem]]:
+        return self._review_items
+
     @property
     def subscribed_events(self) -> list[EventType]:
         return [
@@ -54,9 +63,11 @@ class CurriculumAgent(BaseAgent):
         learner_id = event.learner_id
         knowledge_id = event.data.get("knowledge_id", "")
         mastery = event.data.get("mastery", 0.0)
+        is_correct = event.data.get("is_correct")
+        time_spent_seconds = event.data.get("time_spent_seconds")
         correlation_id = event.correlation_id
 
-        quality = self._mastery_to_quality(mastery)
+        quality = self._attempt_to_quality(is_correct, time_spent_seconds, mastery)
         review_item = self._get_review_item(learner_id, knowledge_id)
         self.sr.review(review_item, quality)
 
@@ -78,6 +89,20 @@ class CurriculumAgent(BaseAgent):
         elif mastery >= 0.2:
             return 1
         return 0
+
+    def _attempt_to_quality(
+        self,
+        is_correct: bool | None,
+        time_spent_seconds: float | None,
+        mastery: float,
+    ) -> int:
+        if is_correct is True:
+            if time_spent_seconds is not None and time_spent_seconds <= 30:
+                return 4
+            return 3
+        if is_correct is False:
+            return 2
+        return self._mastery_to_quality(mastery)
 
     def _get_review_item(self, learner_id: str, knowledge_id: str) -> ReviewItem:
         """获取或创建复习条目。"""

@@ -109,7 +109,7 @@ async def send_message(req: SendMessageRequest, request: Request):
 async def get_progress(learner_id: str, request: Request):
     """获取学生学习进度。"""
     orch = request.app.state.orchestrator
-    return orch.get_learner_progress(learner_id)
+    return await orch.get_learner_progress(learner_id)
 
 
 @router.get("/knowledge-graph")
