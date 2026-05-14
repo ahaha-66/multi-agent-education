@@ -1,6 +1,5 @@
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 
 revision = "20260514_stage_c_course_content"
@@ -48,7 +47,7 @@ def upgrade() -> None:
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("difficulty", sa.Float(), nullable=False, server_default="0.5"),
         sa.Column("description", sa.String(), nullable=True),
-        sa.Column("tags", postgresql.JSONB(), nullable=False, server_default="[]"),
+        sa.Column("tags", sa.JSON(), nullable=False, server_default="[]"),
         sa.Column("order_index", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("version", sa.String(), nullable=False, server_default="1.0"),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
@@ -80,11 +79,11 @@ def upgrade() -> None:
         sa.Column("code", sa.String(), nullable=False),
         sa.Column("type", sa.String(), nullable=False, server_default="single_choice"),
         sa.Column("difficulty", sa.Float(), nullable=False, server_default="0.5"),
-        sa.Column("content", postgresql.JSONB(), nullable=False),
-        sa.Column("answer", postgresql.JSONB(), nullable=False),
-        sa.Column("analysis", postgresql.JSONB(), nullable=True),
-        sa.Column("hint_levels", postgresql.JSONB(), nullable=False, server_default="[]"),
-        sa.Column("tags", postgresql.JSONB(), nullable=False, server_default="[]"),
+        sa.Column("content", sa.JSON(), nullable=False),
+        sa.Column("answer", sa.JSON(), nullable=False),
+        sa.Column("analysis", sa.JSON(), nullable=True),
+        sa.Column("hint_levels", sa.JSON(), nullable=False, server_default="[]"),
+        sa.Column("tags", sa.JSON(), nullable=False, server_default="[]"),
         sa.Column("version", sa.String(), nullable=False, server_default="1.0"),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default="true"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -97,7 +96,7 @@ def upgrade() -> None:
 
     op.create_table(
         "learner_exercise_history",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(), primary_key=True),
         sa.Column("learner_id", sa.String(), nullable=False),
         sa.Column("exercise_id", sa.String(), nullable=False),
         sa.Column("is_correct", sa.Boolean(), nullable=False, server_default="false"),

@@ -1,6 +1,5 @@
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 
 revision = "20260514_stage_b_init"
@@ -55,7 +54,7 @@ def upgrade() -> None:
 
     op.create_table(
         "attempt",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(), primary_key=True),
         sa.Column("learner_id", sa.String(), nullable=False),
         sa.Column("knowledge_id", sa.String(), nullable=False),
         sa.Column("exercise_id", sa.String(), nullable=True),
@@ -79,7 +78,7 @@ def upgrade() -> None:
         sa.Column("timestamp", sa.DateTime(timezone=True), nullable=False),
         sa.Column("correlation_id", sa.String(), nullable=True),
         sa.Column("status", sa.String(), nullable=False, server_default="ok"),
-        sa.Column("payload", postgresql.JSONB(), nullable=False),
+        sa.Column("payload", sa.JSON(), nullable=False),
     )
     op.create_index("ix_event_log_type", "event_log", ["type"])
     op.create_index("ix_event_log_learner_id", "event_log", ["learner_id"])

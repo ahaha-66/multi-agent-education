@@ -1,11 +1,15 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, Index, Integer, String
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import Boolean, DateTime, Float, Index, Integer, String, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
+
+
+def _uuid_str() -> str:
+    return str(uuid.uuid4())
 
 
 class LearnerProfile(Base):
@@ -63,7 +67,7 @@ class ReviewItem(Base):
 class Attempt(Base):
     __tablename__ = "attempt"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
     learner_id: Mapped[str] = mapped_column(String, index=True)
     knowledge_id: Mapped[str] = mapped_column(String, index=True)
     exercise_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
@@ -83,7 +87,7 @@ class EventLog(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, index=True)
     correlation_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     status: Mapped[str] = mapped_column(String, default="ok")
-    payload: Mapped[dict] = mapped_column(JSONB, default=dict)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 class Course(Base):
@@ -130,7 +134,7 @@ class KnowledgePoint(Base):
     name: Mapped[str] = mapped_column(String)
     difficulty: Mapped[float] = mapped_column(Float, default=0.5)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
-    tags: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    tags: Mapped[list] = mapped_column(JSON, default=list)
     order_index: Mapped[int] = mapped_column(Integer, default=0)
     version: Mapped[str] = mapped_column(String, default="1.0")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -171,11 +175,11 @@ class Exercise(Base):
     code: Mapped[str] = mapped_column(String, unique=True, index=True)
     type: Mapped[str] = mapped_column(String, default="single_choice")
     difficulty: Mapped[float] = mapped_column(Float, default=0.5)
-    content: Mapped[dict] = mapped_column(JSONB, default=dict)
-    answer: Mapped[dict] = mapped_column(JSONB, default=dict)
-    analysis: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    hint_levels: Mapped[list[dict]] = mapped_column(JSONB, default=list)
-    tags: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    content: Mapped[dict] = mapped_column(JSON, default=dict)
+    answer: Mapped[dict] = mapped_column(JSON, default=dict)
+    analysis: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    hint_levels: Mapped[list] = mapped_column(JSON, default=list)
+    tags: Mapped[list] = mapped_column(JSON, default=list)
     version: Mapped[str] = mapped_column(String, default="1.0")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
@@ -193,7 +197,7 @@ class Exercise(Base):
 class LearnerExerciseHistory(Base):
     __tablename__ = "learner_exercise_history"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
     learner_id: Mapped[str] = mapped_column(String, index=True)
     exercise_id: Mapped[str] = mapped_column(String, index=True)
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False)

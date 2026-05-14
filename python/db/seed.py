@@ -3,7 +3,6 @@
 
 用法:
     python -m db.seed \
-        --database-url postgresql+asyncpg://user:pass@localhost/dbname \
         --data-file data/seed_math_g7.json
 """
 
@@ -15,7 +14,6 @@ import uuid
 from pathlib import Path
 
 from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.learner_model import KnowledgeState as KnowledgeStateModel
@@ -81,38 +79,34 @@ class CourseContentSeeder:
 
     async def _import_course(self, course_info: dict, force: bool) -> str:
         """导入课程"""
-        course_id = str(uuid.uuid4())
         code = course_info["code"]
         
-        stmt = (
-            insert(Course)
-            .values(
-                id=course_id,
-                code=code,
-                name=course_info["name"],
-                subject=course_info["subject"],
-                grade_level=course_info.get("grade_level"),
-                description=course_info.get("description"),
-                is_active=True,
-            )
-            .returning(Course.id)
+        existing = await self._session.execute(
+            select(Course).where(Course.code == code)
         )
+        course = existing.scalar_one_or_none()
         
-        result = await self._session.execute(stmt)
-        if result.rowcount == 0:
-            existing = await self._session.execute(
-                select(Course).where(Course.code == code)
-            )
-            course = existing.scalar_one_or_none()
-            if course:
-                if force:
-                    course.name = course_info["name"]
-                    course.description = course_info.get("description")
-                    course_id = course.id
-                    logger.info(f"更新课程: {code}")
-                else:
-                    course_id = course.id
-                    logger.info(f"课程已存在，跳过: {code}")
+        if course:
+            if force:
+                course.name = course_info["name"]
+                course.description = course_info.get("description")
+                logger.info(f"更新课程: {code}")
+                return course.id
+            else:
+                logger.info(f"课程已存在，跳过: {code}")
+                return course.id
+        
+        course_id = str(uuid.uuid4())
+        course = Course(
+            id=course_id,
+            code=code,
+            name=course_info["name"],
+            subject=course_info["subject"],
+            grade_level=course_info.get("grade_level"),
+            description=course_info.get("description"),
+            is_active=True,
+        )
+        self._session.add(course)
         
         logger.info(f"导入课程: {code} -> {course_id}")
         return course_id
@@ -121,36 +115,33 @@ class CourseContentSeeder:
         self, chapter_data: dict, course_id: str, force: bool
     ) -> tuple[str, list[dict], list[dict]]:
         """导入章节及其知识点"""
-        chapter_id = str(uuid.uuid4())
         code = chapter_data["code"]
 
-        stmt = insert(Chapter).values(
-            id=chapter_id,
-            course_id=course_id,
-            code=code,
-            name=chapter_data["name"],
-            order_index=chapter_data.get("order_index", 0),
-            description=chapter_data.get("description"),
-        ).returning(Chapter.id)
-
-        result = await self._session.execute(stmt)
-        if result.rowcount == 0:
-            existing = await self._session.execute(
-                select(Chapter).where(Chapter.course_id == course_id, Chapter.code == code)
+        existing = await self._session.execute(
+            select(Chapter).where(Chapter.course_id == course_id, Chapter.code == code)
+        )
+        chapter = existing.scalar_one_or_none()
+        
+        if chapter:
+            if force:
+                chapter.name = chapter_data["name"]
+                chapter.description = chapter_data.get("description")
+                chapter_id = chapter.id
+                logger.info(f"更新章节: {code}")
+            else:
+                chapter_id = chapter.id
+                logger.info(f"章节已存在，跳过: {code}")
+        else:
+            chapter_id = str(uuid.uuid4())
+            chapter = Chapter(
+                id=chapter_id,
+                course_id=course_id,
+                code=code,
+                name=chapter_data["name"],
+                order_index=chapter_data.get("order_index", 0),
+                description=chapter_data.get("description"),
             )
-            chapter = existing.scalar_one_or_none()
-            if chapter:
-                if force:
-                    chapter.name = chapter_data["name"]
-                    chapter.description = chapter_data.get("description")
-                    chapter_id = chapter.id
-                    logger.info(f"更新章节: {code}")
-                else:
-                    chapter_id = chapter.id
-                    logger.info(f"章节已存在，跳过: {code}")
-                await self._session.execute(
-                    select(Chapter).where(Chapter.id == chapter_id)
-                )
+            self._session.add(chapter)
 
         logger.info(f"导入章节: {code} -> {chapter_id}")
 
@@ -161,7 +152,7 @@ class CourseContentSeeder:
             kp_id = str(uuid.uuid4())
             kp_code = kp_data["code"]
 
-            stmt = insert(KnowledgePoint).values(
+            kp = KnowledgePoint(
                 id=kp_id,
                 chapter_id=chapter_id,
                 course_id=course_id,
@@ -173,8 +164,8 @@ class CourseContentSeeder:
                 order_index=kp_data.get("order_index", 0),
                 is_active=True,
             )
+            self._session.add(kp)
 
-            await self._session.execute(stmt)
             logger.info(f"  导入知识点: {kp_code} -> {kp_id}")
 
             kps.append({
@@ -221,14 +212,14 @@ class CourseContentSeeder:
                 if (source_id, target_id) in existing_edges:
                     continue
 
-                stmt = insert(KnowledgeEdge).values(
+                edge = KnowledgeEdge(
                     id=str(uuid.uuid4()),
                     source_kp_id=source_id,
                     target_kp_id=target_id,
                     relation_type="prerequisite",
                     strength=1.0,
                 )
-                await self._session.execute(stmt)
+                self._session.add(edge)
                 edge_count += 1
                 logger.info(f"  创建依赖关系: {prereq_code} -> {kp['code']}")
 
@@ -264,7 +255,7 @@ class CourseContentSeeder:
                 exercise_id = str(uuid.uuid4())
                 ex_code = ex_data.get("code") or f"{kp['code']}_ex_{exercise_count + 1}"
 
-                stmt = insert(Exercise).values(
+                exercise = Exercise(
                     id=exercise_id,
                     knowledge_point_id=kp_id,
                     chapter_id=chapter_id,
@@ -279,8 +270,8 @@ class CourseContentSeeder:
                     tags=ex_data.get("tags", []),
                     is_active=True,
                 )
+                self._session.add(exercise)
 
-                await self._session.execute(stmt)
                 exercise_count += 1
                 logger.info(f"    导入练习题: {ex_code} -> {exercise_id}")
 
@@ -292,7 +283,7 @@ async def main():
     parser.add_argument(
         "--database-url",
         type=str,
-        default="postgresql+asyncpg://postgres:postgres@localhost/edu_agent",
+        default="sqlite+aiosqlite:///./edu_agent.db",
         help="数据库连接 URL",
     )
     parser.add_argument(

@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     minimax_model: str = "MiniMax-M2.7"
 
     # Database
-    database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/edu_agent"
+    database_url: str = "sqlite+aiosqlite:///./edu_agent.db"
     redis_url: str = "redis://localhost:6379/0"
 
     # Server

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from core.event_bus import Event
@@ -19,15 +18,15 @@ class PersistenceService:
     async def touch_learner(self, learner_id: str) -> None:
         now = datetime.utcnow()
         async with self._sessionmaker() as session:
-            stmt = (
-                insert(LearnerProfile)
-                .values(learner_id=learner_id, created_at=now, last_active_at=now)
-                .on_conflict_do_update(
-                    index_elements=[LearnerProfile.learner_id],
-                    set_={"last_active_at": now},
-                )
-            )
-            await session.execute(stmt)
+            existing = await session.get(LearnerProfile, learner_id)
+            if existing:
+                existing.last_active_at = now
+            else:
+                session.add(LearnerProfile(
+                    learner_id=learner_id,
+                    created_at=now,
+                    last_active_at=now,
+                ))
             await session.commit()
 
     async def record_attempt(
@@ -55,18 +54,18 @@ class PersistenceService:
     async def log_event(self, event: Event) -> None:
         payload = event.model_dump(mode="json")
         async with self._sessionmaker() as session:
-            stmt = insert(EventLog).values(
-                event_id=event.id,
-                type=event.type.value,
-                source=event.source,
-                learner_id=event.learner_id,
-                timestamp=event.timestamp,
-                correlation_id=event.correlation_id,
-                payload=payload,
-            )
-            stmt = stmt.on_conflict_do_nothing(index_elements=[EventLog.event_id])
-            await session.execute(stmt)
-            await session.commit()
+            existing = await session.get(EventLog, event.id)
+            if not existing:
+                session.add(EventLog(
+                    event_id=event.id,
+                    type=event.type.value,
+                    source=event.source,
+                    learner_id=event.learner_id,
+                    timestamp=event.timestamp,
+                    correlation_id=event.correlation_id,
+                    payload=payload,
+                ))
+                await session.commit()
 
     async def load_learner_model(self, learner_id: str) -> LearnerModel:
         model = LearnerModel(learner_id, bkt_params=BKTParams())
@@ -93,44 +92,35 @@ class PersistenceService:
 
     async def save_learner_model(self, model: LearnerModel) -> None:
         now = datetime.utcnow()
-        rows = []
-        for s in model.knowledge_states.values():
-            rows.append(
-                {
-                    "learner_id": model.learner_id,
-                    "knowledge_id": s.knowledge_id,
-                    "mastery": s.mastery,
-                    "alpha": s.alpha,
-                    "beta": s.beta,
-                    "attempts": s.attempts,
-                    "correct_count": s.correct_count,
-                    "wrong_streak": s.wrong_streak,
-                    "last_attempt": s.last_attempt,
-                    "streak": s.streak,
-                    "version": 1,
-                    "updated_at": now,
-                }
-            )
-        if not rows:
-            return
         async with self._sessionmaker() as session:
-            stmt = insert(KnowledgeState).values(rows)
-            stmt = stmt.on_conflict_do_update(
-                index_elements=[KnowledgeState.learner_id, KnowledgeState.knowledge_id],
-                set_={
-                    "mastery": stmt.excluded.mastery,
-                    "alpha": stmt.excluded.alpha,
-                    "beta": stmt.excluded.beta,
-                    "attempts": stmt.excluded.attempts,
-                    "correct_count": stmt.excluded.correct_count,
-                    "wrong_streak": stmt.excluded.wrong_streak,
-                    "last_attempt": stmt.excluded.last_attempt,
-                    "streak": stmt.excluded.streak,
-                    "version": KnowledgeState.version + 1,
-                    "updated_at": stmt.excluded.updated_at,
-                },
-            )
-            await session.execute(stmt)
+            for s in model.knowledge_states.values():
+                existing = await session.get(KnowledgeState, (model.learner_id, s.knowledge_id))
+                if existing:
+                    existing.mastery = s.mastery
+                    existing.alpha = s.alpha
+                    existing.beta = s.beta
+                    existing.attempts = s.attempts
+                    existing.correct_count = s.correct_count
+                    existing.wrong_streak = s.wrong_streak
+                    existing.last_attempt = s.last_attempt
+                    existing.streak = s.streak
+                    existing.version = existing.version + 1
+                    existing.updated_at = now
+                else:
+                    session.add(KnowledgeState(
+                        learner_id=model.learner_id,
+                        knowledge_id=s.knowledge_id,
+                        mastery=s.mastery,
+                        alpha=s.alpha,
+                        beta=s.beta,
+                        attempts=s.attempts,
+                        correct_count=s.correct_count,
+                        wrong_streak=s.wrong_streak,
+                        last_attempt=s.last_attempt,
+                        streak=s.streak,
+                        version=1,
+                        updated_at=now,
+                    ))
             await session.commit()
 
     async def load_review_items(self, learner_id: str) -> dict[str, ReviewItemModel]:
@@ -153,39 +143,30 @@ class PersistenceService:
 
     async def save_review_items(self, learner_id: str, items: dict[str, ReviewItemModel]) -> None:
         now = datetime.utcnow()
-        rows = []
-        for item in items.values():
-            rows.append(
-                {
-                    "learner_id": learner_id,
-                    "knowledge_id": item.knowledge_id,
-                    "easiness_factor": item.easiness_factor,
-                    "interval_days": item.interval_days,
-                    "repetition": item.repetition,
-                    "due_at": item.due_at,
-                    "last_review": item.last_review,
-                    "total_reviews": item.total_reviews,
-                    "version": 1,
-                    "updated_at": now,
-                }
-            )
-        if not rows:
-            return
         async with self._sessionmaker() as session:
-            stmt = insert(ReviewItem).values(rows)
-            stmt = stmt.on_conflict_do_update(
-                index_elements=[ReviewItem.learner_id, ReviewItem.knowledge_id],
-                set_={
-                    "easiness_factor": stmt.excluded.easiness_factor,
-                    "interval_days": stmt.excluded.interval_days,
-                    "repetition": stmt.excluded.repetition,
-                    "due_at": stmt.excluded.due_at,
-                    "last_review": stmt.excluded.last_review,
-                    "total_reviews": stmt.excluded.total_reviews,
-                    "version": ReviewItem.version + 1,
-                    "updated_at": stmt.excluded.updated_at,
-                },
-            )
-            await session.execute(stmt)
+            for item in items.values():
+                existing = await session.get(ReviewItem, (learner_id, item.knowledge_id))
+                if existing:
+                    existing.easiness_factor = item.easiness_factor
+                    existing.interval_days = item.interval_days
+                    existing.repetition = item.repetition
+                    existing.due_at = item.due_at
+                    existing.last_review = item.last_review
+                    existing.total_reviews = item.total_reviews
+                    existing.version = existing.version + 1
+                    existing.updated_at = now
+                else:
+                    session.add(ReviewItem(
+                        learner_id=learner_id,
+                        knowledge_id=item.knowledge_id,
+                        easiness_factor=item.easiness_factor,
+                        interval_days=item.interval_days,
+                        repetition=item.repetition,
+                        due_at=item.due_at,
+                        last_review=item.last_review,
+                        total_reviews=item.total_reviews,
+                        version=1,
+                        updated_at=now,
+                    ))
             await session.commit()
 
