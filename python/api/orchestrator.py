@@ -7,11 +7,14 @@ Agent 编排器 -- 初始化所有Agent并连接到EventBus。
 3. 提供对外接口供API层调用
 """
 
+import logging
+
 from config.settings import settings
 from core.event_bus import Event, EventBus, EventType
 from core.learner_model import LearnerModel
 from db.persistence import PersistenceService
 from db.session import create_engine, create_sessionmaker
+from services.knowledge_graph_service import KnowledgeGraphService
 from agents import (
     AssessmentAgent,
     TutorAgent,
@@ -19,6 +22,9 @@ from agents import (
     HintAgent,
     EngagementAgent,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class AgentOrchestrator:
@@ -30,6 +36,7 @@ class AgentOrchestrator:
         self.persistence = PersistenceService(self._sessionmaker)
         self.event_bus = EventBus(event_sink=self.persistence.log_event)
         self.learner_models: dict[str, LearnerModel] = {}
+        self._current_course_id: str | None = None
 
         self.assessment = AssessmentAgent(
             name="AssessmentAgent",
@@ -56,6 +63,41 @@ class AgentOrchestrator:
             event_bus=self.event_bus,
             learner_models=self.learner_models,
         )
+
+    async def initialize_knowledge_graph(self, course_id: str) -> dict:
+        """初始化课程知识图谱
+        
+        Args:
+            course_id: 课程 ID
+            
+        Returns:
+            dict: {
+                "course_id": str,
+                "nodes": int,
+                "edges": int
+            }
+        """
+        self._current_course_id = course_id
+        
+        async with self._sessionmaker() as session:
+            kg_service = KnowledgeGraphService(session)
+            graph = await kg_service.get_graph(course_id)
+            self.curriculum.set_knowledge_graph(graph)
+            
+            graph_dict = graph.to_dict()
+            
+            logger.info(
+                f"[Orchestrator] 知识图谱加载完成: "
+                f"course_id={course_id}, "
+                f"nodes={len(graph_dict['nodes'])}, "
+                f"edges={len(graph_dict['edges'])}"
+            )
+            
+            return {
+                "course_id": course_id,
+                "nodes": len(graph_dict["nodes"]),
+                "edges": len(graph_dict["edges"]),
+            }
 
     async def shutdown(self) -> None:
         await self._engine.dispose()
