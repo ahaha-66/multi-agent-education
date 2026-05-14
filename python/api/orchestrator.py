@@ -75,6 +75,7 @@ class AgentOrchestrator:
         is_correct: bool,
         time_spent: float = 0,
         correlation_id: str | None = None,
+        exercise_id: str | None = None,
     ) -> list[Event]:
         """学生提交答案 -> 触发完整的Agent处理链。"""
         await self._ensure_loaded(learner_id)
@@ -84,6 +85,7 @@ class AgentOrchestrator:
             is_correct,
             time_spent_seconds=time_spent,
             correlation_id=correlation_id,
+            exercise_id=exercise_id,
         )
         event = Event(
             type=EventType.STUDENT_SUBMISSION,

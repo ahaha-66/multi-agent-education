@@ -37,12 +37,14 @@ class PersistenceService:
         is_correct: bool,
         time_spent_seconds: float,
         correlation_id: str | None,
+        exercise_id: str | None = None,
     ) -> None:
         async with self._sessionmaker() as session:
             session.add(
                 Attempt(
                     learner_id=learner_id,
                     knowledge_id=knowledge_id,
+                    exercise_id=exercise_id,
                     is_correct=is_correct,
                     time_spent_seconds=time_spent_seconds,
                     correlation_id=correlation_id,
@@ -82,6 +84,7 @@ class PersistenceService:
                     beta=row.beta,
                     attempts=row.attempts,
                     correct_count=row.correct_count,
+                    wrong_streak=row.wrong_streak,
                     last_attempt=row.last_attempt,
                     streak=row.streak,
                 )
@@ -101,8 +104,10 @@ class PersistenceService:
                     "beta": s.beta,
                     "attempts": s.attempts,
                     "correct_count": s.correct_count,
+                    "wrong_streak": s.wrong_streak,
                     "last_attempt": s.last_attempt,
                     "streak": s.streak,
+                    "version": 1,
                     "updated_at": now,
                 }
             )
@@ -118,8 +123,10 @@ class PersistenceService:
                     "beta": stmt.excluded.beta,
                     "attempts": stmt.excluded.attempts,
                     "correct_count": stmt.excluded.correct_count,
+                    "wrong_streak": stmt.excluded.wrong_streak,
                     "last_attempt": stmt.excluded.last_attempt,
                     "streak": stmt.excluded.streak,
+                    "version": KnowledgeState.version + 1,
                     "updated_at": stmt.excluded.updated_at,
                 },
             )
@@ -138,7 +145,7 @@ class PersistenceService:
                     easiness_factor=row.easiness_factor,
                     interval_days=row.interval_days,
                     repetition=row.repetition,
-                    next_review=row.next_review,
+                    due_at=row.due_at,
                     last_review=row.last_review,
                     total_reviews=row.total_reviews,
                 )
@@ -155,9 +162,10 @@ class PersistenceService:
                     "easiness_factor": item.easiness_factor,
                     "interval_days": item.interval_days,
                     "repetition": item.repetition,
-                    "next_review": item.next_review,
+                    "due_at": item.due_at,
                     "last_review": item.last_review,
                     "total_reviews": item.total_reviews,
+                    "version": 1,
                     "updated_at": now,
                 }
             )
@@ -171,9 +179,10 @@ class PersistenceService:
                     "easiness_factor": stmt.excluded.easiness_factor,
                     "interval_days": stmt.excluded.interval_days,
                     "repetition": stmt.excluded.repetition,
-                    "next_review": stmt.excluded.next_review,
+                    "due_at": stmt.excluded.due_at,
                     "last_review": stmt.excluded.last_review,
                     "total_reviews": stmt.excluded.total_reviews,
+                    "version": ReviewItem.version + 1,
                     "updated_at": stmt.excluded.updated_at,
                 },
             )

@@ -76,33 +76,20 @@ class CurriculumAgent(BaseAgent):
 
         await self._send_review_schedule(learner_id, correlation_id)
 
-    def _mastery_to_quality(self, mastery: float) -> int:
-        """将mastery概率映射到SM-2的quality评分 (0-5)。"""
-        if mastery >= 0.9:
-            return 5
-        elif mastery >= 0.75:
-            return 4
-        elif mastery >= 0.6:
-            return 3
-        elif mastery >= 0.4:
-            return 2
-        elif mastery >= 0.2:
-            return 1
-        return 0
-
     def _attempt_to_quality(
         self,
         is_correct: bool | None,
         time_spent_seconds: float | None,
         mastery: float,
     ) -> int:
+        """SM-2质量分映射：基于作答质量（正确性+耗时）而非mastery。"""
         if is_correct is True:
             if time_spent_seconds is not None and time_spent_seconds <= 30:
-                return 4
-            return 3
+                return 4  # 正确且耗时合理
+            return 3  # 正确但耗时偏长
         if is_correct is False:
-            return 2
-        return self._mastery_to_quality(mastery)
+            return 2  # 错误
+        return 2  # 放弃/查看答案，默认返回2
 
     def _get_review_item(self, learner_id: str, knowledge_id: str) -> ReviewItem:
         """获取或创建复习条目。"""
