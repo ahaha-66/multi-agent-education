@@ -1,0 +1,755 @@
+{
+  "course": {
+    "code": "math_g7",
+    "name": "七年级数学上册",
+    "subject": "math",
+    "grade_level": 7,
+    "description": "七年级数学上册，包含有理数、代数式、一元一次方程等核心章节"
+  },
+  "chapters": [
+    {
+      "code": "ch1",
+      "name": "有理数",
+      "order_index": 1,
+      "description": "学习正数、负数、有理数的概念和四则运算",
+      "knowledge_points": [
+        {
+          "code": "kp_1_1",
+          "name": "正数和负数",
+          "difficulty": 0.1,
+          "prerequisites": [],
+          "tags": ["基础概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "下列各数中，是正数的是（ ）",
+                "options": [
+                  {"label": "A", "value": "-5"},
+                  {"label": "B", "value": "0"},
+                  {"label": "C", "value": "3.14"},
+                  {"label": "D", "value": "-0.5"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "正数是大于0的数。-5是负数，0既不是正数也不是负数，3.14>0是正数，-0.5是负数。",
+                "key_point": "掌握正数、负数和0的定义"
+              },
+              "difficulty": 0.1,
+              "tags": ["基础"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "如果向东走100米记作+100米，那么向西走80米应记作（ ）",
+                "options": [
+                  {"label": "A", "value": "+80米"},
+                  {"label": "B", "value": "-80米"},
+                  {"label": "C", "value": "80米"},
+                  {"label": "D", "value": "-20米"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "正负数可以用来表示相反意义的量。向东为正，则向西为负。",
+                "key_point": "理解正负数表示相反意义的量"
+              },
+              "difficulty": 0.15,
+              "tags": ["应用"]
+            },
+            {
+              "type": "fill_blank",
+              "content": {
+                "stem": "如果收入500元记作+500元，那么支出300元应记作______元。"
+              },
+              "answer": {"value": "-300"},
+              "analysis": {
+                "text": "收入和支出是相反意义的量，收入为正则支出为负。",
+                "key_point": "相反意义的量的表示方法"
+              },
+              "difficulty": 0.12,
+              "tags": ["基础"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "下列说法中，正确的是（ ）",
+                "options": [
+                  {"label": "A", "value": "0是最小的正数"},
+                  {"label": "B", "value": "0是最大的负数"},
+                  {"label": "C", "value": "0既不是正数也不是负数"},
+                  {"label": "D", "value": "正数都大于负数"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "0是分界点，既不是正数也不是负数。正数大于0，负数小于0，所以正数都大于负数，但C选项更准确地描述了0的特性。",
+                "key_point": "0的特殊性"
+              },
+              "difficulty": 0.2,
+              "tags": ["概念理解"]
+            }
+          ]
+        },
+        {
+          "code": "kp_1_2",
+          "name": "有理数的分类",
+          "difficulty": 0.15,
+          "prerequisites": ["kp_1_1"],
+          "tags": ["基础概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "下列各数中，属于整数的是（ ）",
+                "options": [
+                  {"label": "A", "value": "3.5"},
+                  {"label": "B", "value": "-2"},
+                  {"label": "C", "value": "1/3"},
+                  {"label": "D", "value": "π"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "整数包括正整数、负整数和0。-2是负整数，属于整数。3.5是小数，1/3是分数，π是无理数。",
+                "key_point": "整数的定义"
+              },
+              "difficulty": 0.12,
+              "tags": ["分类"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "下列各数中，属于正数的是（ ）",
+                "options": [
+                  {"label": "A", "value": "-(-3)"},
+                  {"label": "B", "value": "|-5|"},
+                  {"label": "C", "value": "-|3|"},
+                  {"label": "D", "value": "-(-(-2))"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "|-5|=5是正数。-(-3)=3是正数，但写法不是正数；-|3|=-3是负数；-(-(-2))=-2是负数。",
+                "key_point": "绝对值和相反数的计算"
+              },
+              "difficulty": 0.25,
+              "tags": ["综合"]
+            }
+          ]
+        },
+        {
+          "code": "kp_1_3",
+          "name": "数轴",
+          "difficulty": 0.2,
+          "prerequisites": ["kp_1_1"],
+          "tags": ["几何直观"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "在数轴上，原点左边的点表示的数是（ ）",
+                "options": [
+                  {"label": "A", "value": "正数"},
+                  {"label": "B", "value": "负数"},
+                  {"label": "C", "value": "0"},
+                  {"label": "D", "value": "非负数"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "数轴上，原点O表示0，原点右边的点表示正数，原点左边的点表示负数。",
+                "key_point": "数轴的三要素：原点、正方向、单位长度"
+              },
+              "difficulty": 0.15,
+              "tags": ["基础"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "在数轴上，表示数-3的点与原点的距离是（ ）",
+                "options": [
+                  {"label": "A", "value": "-3"},
+                  {"label": "B", "value": "3"},
+                  {"label": "C", "value": "0"},
+                  {"label": "D", "value": "6"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "数轴上两点间的距离等于它们表示的数的差的绝对值。|-3-0|=|-3|=3。",
+                "key_point": "绝对值的几何意义"
+              },
+              "difficulty": 0.2,
+              "tags": ["概念"]
+            },
+            {
+              "type": "fill_blank",
+              "content": {
+                "stem": "在数轴上，与表示数-2的点距离为5的点表示的数是______。"
+              },
+              "answer": {"value": "3或-7"},
+              "analysis": {
+                "text": "设该点表示的数为x，则|x-(-2)|=5，即|x+2|=5，解得x=3或x=-7。",
+                "key_point": "绝对值方程的解法"
+              },
+              "difficulty": 0.3,
+              "tags": ["综合"]
+            }
+          ]
+        },
+        {
+          "code": "kp_1_4",
+          "name": "绝对值",
+          "difficulty": 0.25,
+          "prerequisites": ["kp_1_1", "kp_1_3"],
+          "tags": ["重要概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "|-6|的相反数是（ ）",
+                "options": [
+                  {"label": "A", "value": "6"},
+                  {"label": "B", "value": "-6"},
+                  {"label": "C", "value": "1/6"},
+                  {"label": "D", "value": "-1/6"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "|-6|=6，6的相反数是-6。",
+                "key_point": "绝对值和相反数的综合运算"
+              },
+              "difficulty": 0.2,
+              "tags": ["基础运算"]
+            },
+            {
+              "type": "fill_blank",
+              "content": {
+                "stem": "若|x|=5，则x=______。"
+              },
+              "answer": {"value": "5或-5"},
+              "analysis": {
+                "text": "绝对值的定义：|a|=a（a≥0）或|a|=-a（a<0）。所以|x|=5的解为x=5或x=-5。",
+                "key_point": "绝对值方程的解法"
+              },
+              "difficulty": 0.2,
+              "tags": ["方程"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "若|a|=-a，则a的取值范围是（ ）",
+                "options": [
+                  {"label": "A", "value": "a>0"},
+                  {"label": "B", "value": "a<0"},
+                  {"label": "C", "value": "a≤0"},
+                  {"label": "D", "value": "a≥0"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "当a≥0时，|a|=a；当a<0时，|a|=-a。由|a|=-a可得-a≥0，即a≤0。",
+                "key_point": "分类讨论思想"
+              },
+              "difficulty": 0.3,
+              "tags": ["综合"]
+            }
+          ]
+        },
+        {
+          "code": "kp_1_5",
+          "name": "有理数的大小比较",
+          "difficulty": 0.2,
+          "prerequisites": ["kp_1_1", "kp_1_3"],
+          "tags": ["基础技能"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "比较大小：-3______-5（在横线上填>、<或=）",
+                "options": [
+                  {"label": "A", "value": ">"},
+                  {"label": "B", "value": "<"},
+                  {"label": "C", "value": "="}
+                ]
+              },
+              "answer": {"value": ">"},
+              "analysis": {
+                "text": "在数轴上，-3在-5的右边，所以-3>-5。负数比较大小：绝对值大的反而小。",
+                "key_point": "负数大小比较法则"
+              },
+              "difficulty": 0.15,
+              "tags": ["基础"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "若a>0，b<0，且|a|<|b|，则a、b的大小关系是（ ）",
+                "options": [
+                  {"label": "A", "value": "a>b"},
+                  {"label": "B", "value": "a<b"},
+                  {"label": "C", "value": "a=b"},
+                  {"label": "D", "value": "无法确定"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "a>0，b<0，则a为正，b为负，所以a>b。",
+                "key_point": "正数大于所有负数"
+              },
+              "difficulty": 0.25,
+              "tags": ["推理"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "ch2",
+      "name": "代数式",
+      "order_index": 2,
+      "description": "学习用字母表示数、代数式概念及其运算",
+      "knowledge_points": [
+        {
+          "code": "kp_2_1",
+          "name": "用字母表示数",
+          "difficulty": 0.25,
+          "prerequisites": ["kp_1_1"],
+          "tags": ["基础概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "三角形的底为a，高为h，则面积为（ ）",
+                "options": [
+                  {"label": "A", "value": "ah"},
+                  {"label": "B", "value": "2ah"},
+                  {"label": "C", "value": "1/2ah"},
+                  {"label": "D", "value": "a+h"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "三角形面积公式：S=1/2×底×高=1/2ah。",
+                "key_point": "会用字母表示几何公式"
+              },
+              "difficulty": 0.2,
+              "tags": ["应用"]
+            },
+            {
+              "type": "fill_blank",
+              "content": {
+                "stem": "某商品原价m元，打8折后的价格是______元。"
+              },
+              "answer": {"value": "0.8m"},
+              "analysis": {
+                "text": "打8折就是原价的80%，所以价格是m×0.8=0.8m元。",
+                "key_point": "用字母表示数量关系"
+              },
+              "difficulty": 0.25,
+              "tags": ["应用"]
+            }
+          ]
+        },
+        {
+          "code": "kp_2_2",
+          "name": "代数式的概念",
+          "difficulty": 0.3,
+          "prerequisites": ["kp_2_1"],
+          "tags": ["基础概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "下列各式中，是代数式的是（ ）",
+                "options": [
+                  {"label": "A", "value": "a+1=3"},
+                  {"label": "B", "value": "S=πr²"},
+                  {"label": "C", "value": "a+1"},
+                  {"label": "D", "value": "x>0"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "代数式是用运算符号把数或字母连接而成的式子。A是等式，B是公式（可看作等式），C是代数式，D是不等式。",
+                "key_point": "代数式的定义"
+              },
+              "difficulty": 0.2,
+              "tags": ["概念"]
+            },
+            {
+              "type": "fill_blank",
+              "content": {
+                "stem": "当x=1时，代数式2x+3的值是______。"
+              },
+              "answer": {"value": "5"},
+              "analysis": {
+                "text": "当x=1时，2x+3=2×1+3=2+3=5。",
+                "key_point": "求代数式的值"
+              },
+              "difficulty": 0.15,
+              "tags": ["基础"]
+            }
+          ]
+        },
+        {
+          "code": "kp_2_3",
+          "name": "单项式",
+          "difficulty": 0.35,
+          "prerequisites": ["kp_2_2"],
+          "tags": ["核心概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "下列各式中，是单项式的是（ ）",
+                "options": [
+                  {"label": "A", "value": "a+b"},
+                  {"label": "B", "value": "2x-1"},
+                  {"label": "C", "value": "3ab²"},
+                  {"label": "D", "value": "1/x"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "单项式是数与字母的乘积，或单独的数或字母。3ab²是数3与字母a、b²的乘积，是单项式。",
+                "key_point": "单项式的定义"
+              },
+              "difficulty": 0.25,
+              "tags": ["基础"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "单项式-3x²y³的系数是（ ）",
+                "options": [
+                  {"label": "A", "value": "3"},
+                  {"label": "B", "value": "-3"},
+                  {"label": "C", "value": "2"},
+                  {"label": "D", "value": "3"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "单项式的系数是数字因数。-3x²y³的数字因数是-3。",
+                "key_point": "单项式系数的识别"
+              },
+              "difficulty": 0.2,
+              "tags": ["基础"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "单项式-3x²y³的次数是（ ）",
+                "options": [
+                  {"label": "A", "value": "2"},
+                  {"label": "B", "value": "3"},
+                  {"label": "C", "value": "5"},
+                  {"label": "D", "value": "6"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "单项式的次数是所有字母指数的和。x的指数是2，y的指数是3，2+3=5。",
+                "key_point": "单项式次数的计算"
+              },
+              "difficulty": 0.2,
+              "tags": ["基础"]
+            }
+          ]
+        },
+        {
+          "code": "kp_2_4",
+          "name": "多项式",
+          "difficulty": 0.4,
+          "prerequisites": ["kp_2_3"],
+          "tags": ["核心概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "多项式2x²-3x+5是（ ）",
+                "options": [
+                  {"label": "A", "value": "一次二项式"},
+                  {"label": "B", "value": "二次二项式"},
+                  {"label": "C", "value": "二次三项式"},
+                  {"label": "D", "value": "三次三项式"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "多项式次数由最高次项决定，x²是最高次项，次数为2，有三项，所以是二次三项式。",
+                "key_point": "多项式的命名"
+              },
+              "difficulty": 0.3,
+              "tags": ["基础"]
+            },
+            {
+              "type": "fill_blank",
+              "content": {
+                "stem": "多项式3x³y-2xy²+5xy-8是______次四项式。"
+              },
+              "answer": {"value": "四"},
+              "analysis": {
+                "text": "3x³y的次数是3+1=4，-2xy²的次数是1+2=3，5xy的次数是2，各项中最高次数为4。",
+                "key_point": "多项式次数的确定"
+              },
+              "difficulty": 0.35,
+              "tags": ["概念"]
+            }
+          ]
+        },
+        {
+          "code": "kp_2_5",
+          "name": "整式的加减",
+          "difficulty": 0.45,
+          "prerequisites": ["kp_2_3", "kp_2_4"],
+          "tags": ["运算技能"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "化简：2(x+1)-3(x-1)的结果是（ ）",
+                "options": [
+                  {"label": "A", "value": "-x+5"},
+                  {"label": "B", "value": "-x+1"},
+                  {"label": "C", "value": "5x+5"},
+                  {"label": "D", "value": "-x-5"}
+                ]
+              },
+              "answer": {"value": "A"},
+              "analysis": {
+                "text": "2(x+1)-3(x-1)=2x+2-3x+3=-x+5。",
+                "key_point": "去括号法则"
+              },
+              "difficulty": 0.3,
+              "tags": ["基础运算"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "若A=2x²-3x+1，B=x²+2x-3，则A-B等于（ ）",
+                "options": [
+                  {"label": "A", "value": "x²-5x+4"},
+                  {"label": "B", "value": "x²-5x-2"},
+                  {"label": "C", "value": "3x²-x-2"},
+                  {"label": "D", "value": "x²+x+4"}
+                ]
+              },
+              "answer": {"value": "A"},
+              "analysis": {
+                "text": "A-B=(2x²-3x+1)-(x²+2x-3)=2x²-3x+1-x²-2x+3=x²-5x+4。",
+                "key_point": "整式减法法则"
+              },
+              "difficulty": 0.4,
+              "tags": ["运算"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "ch3",
+      "name": "一元一次方程",
+      "order_index": 3,
+      "description": "学习一元一次方程的概念、解法和应用",
+      "knowledge_points": [
+        {
+          "code": "kp_3_1",
+          "name": "一元一次方程的概念",
+          "difficulty": 0.3,
+          "prerequisites": ["kp_2_2"],
+          "tags": ["基础概念"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "下列各方程中，是一元一次方程的是（ ）",
+                "options": [
+                  {"label": "A", "value": "x²+1=5"},
+                  {"label": "B", "value": "x+y=3"},
+                  {"label": "C", "value": "2x+1=3"},
+                  {"label": "D", "value": "1/x=2"}
+                ]
+              },
+              "answer": {"value": "C"},
+              "analysis": {
+                "text": "一元一次方程满足：一个未知数，未知数次数为1。2x+1=3符合条件。",
+                "key_point": "一元一次方程的定义"
+              },
+              "difficulty": 0.25,
+              "tags": ["概念"]
+            },
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "方程2x-3=7的解是（ ）",
+                "options": [
+                  {"label": "A", "value": "x=2"},
+                  {"label": "B", "value": "x=5"},
+                  {"label": "C", "value": "x=3"},
+                  {"label": "D", "value": "x=10"}
+                ]
+              },
+              "answer": {"value": "B"},
+              "analysis": {
+                "text": "2x-3=7，2x=10，x=5。",
+                "key_point": "方程解的概念"
+              },
+              "difficulty": 0.2,
+              "tags": ["基础"]
+            }
+          ]
+        },
+        {
+          "code": "kp_3_2",
+          "name": "等式的性质",
+          "difficulty": 0.35,
+          "prerequisites": ["kp_3_1"],
+          "tags": ["基础理论"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "如果a=b，那么下列等式不一定成立的是（ ）",
+                "options": [
+                  {"label": "A", "value": "a+3=b+3"},
+                  {"label": "B", "value": "a-3=b-3"},
+                  {"label": "C", "value": "3a=3b"},
+                  {"label": "D", "value": "a²=b²"}
+                ]
+              },
+              "answer": {"value": "D"},
+              "analysis": {
+                "text": "等式性质：两边同时加、减、乘、除（除数不为0）同一个数，等式仍成立。但a²=b²需要a=b或a=-b，不一定成立。",
+                "key_point": "等式性质的适用范围"
+              },
+              "difficulty": 0.4,
+              "tags": ["概念"]
+            }
+          ]
+        },
+        {
+          "code": "kp_3_3",
+          "name": "解一元一次方程（移项）",
+          "difficulty": 0.4,
+          "prerequisites": ["kp_3_1", "kp_3_2"],
+          "tags": ["核心技能"],
+          "exercises": [
+            {
+              "type": "single_choice",
+              "content": {
+                "stem": "解方程：3x+5=2x-3",
+                "options": [
+                  {"label": "A", "value": "x=-8"},
+                  {"label": "B", "value": "x=8"},
+                  {"label": "C", "value": "x=-2"},
+                  {"label": "D", "value": "x=2"}
+                ]
+              },
+              "answer": {"value": "A"},
+              "analysis": {
+                "text": "移项：3x-2x=-3-5，x=-8。",
+                "key_point": "移项要变号"
+              },
+              "difficulty": 0.35,
+              "tags": ["基础解法"]
+            },
+            {
+              "type": "fill_blank",
+              "content": {
+                "stem": "解方程5x-7=3x+9，移项后得5x-3x=9+______。"
+              },
+              "answer": {"value": "7"},
+              "analysis": {
+                "text": "5x-7=3x+9，移项：5x-3x=9+7。注意：-7移到右边变成+7。",
+                "key_point": "移项法则"
+              },
+              "difficulty": 0.3,
+              "tags": ["基础"]
+            },
+            {
+              "type": "solution",
+              "content": {
+                "stem": "解方程：4(2x-1)=3(x+2)"
+              },
+              "answer": {
+                "steps": [
+                  "去括号：8x-4=3x+6",
+                  "移项：8x-3x=6+4",
+                  "合并：5x=10",
+                  "系数化为1：x=2"
+                ],
+                "result": "x=2"
+              },
+              "analysis": {
+                "text": "解一元一次方程的一般步骤：去括号→移项→合并同类项→系数化为1。",
+                "key_point": "解方程的完整步骤"
+              },
+              "difficulty": 0.45,
+              "tags": ["综合"]
+            }
+          ]
+        },
+        {
+          "code": "kp_3_4",
+          "name": "一元一次方程的应用",
+          "difficulty": 0.5,
+          "prerequisites": ["kp_3_3"],
+          "tags": ["应用能力"],
+          "exercises": [
+            {
+              "type": "solution",
+              "content": {
+                "stem": "某班学生到图书馆借书，平均每人借4本。如果少去2名学生，则每人借6本。问这个班有多少学生？"
+              },
+              "answer": {
+                "steps": [
+                  "设：这个班有x名学生",
+                  "根据题意：4x=6(x-2)",
+                  "去括号：4x=6x-12",
+                  "移项：4x-6x=-12",
+                  "合并：-2x=-12",
+                  "系数化为1：x=6"
+                ],
+                "result": "这个班有6名学生"
+              },
+              "analysis": {
+                "text": "本题关键：书的总数不变。设学生数为x，总书数=4x，也=(x-2)×6。",
+                "key_point": "找等量关系"
+              },
+              "difficulty": 0.55,
+              "tags": ["应用题"]
+            },
+            {
+              "type": "solution",
+              "content": {
+                "stem": "小明从家出发去学校，每分钟走80米，则提前5分钟到校；若每分钟走60米，则迟到3分钟。小学家到学校的距离是多少？"
+              },
+              "answer": {
+                "steps": [
+                  "设：准时到校需要x分钟",
+                  "距离=80(x-5)=60(x+3)",
+                  "80x-400=60x+180",
+                  "20x=580",
+                  "x=29（分钟）",
+                  "距离=80×(29-5)=80×24=1920（米）"
+                ],
+                "result": "小明的家到学校的距离是1920米"
+              },
+              "analysis": {
+                "text": "本题关键：距离不变。准时到校的时间是x分钟，距离可以用两种速度和时间表示。",
+                "key_point": "行程问题的等量关系"
+              },
+              "difficulty": 0.6,
+              "tags": ["应用题"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
