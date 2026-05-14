@@ -16,8 +16,11 @@ Agent 基类 -- 所有Agent的公共接口和行为。
 import logging
 from abc import ABC, abstractmethod
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.event_bus import Event, EventBus, EventType
 from core.learner_model import LearnerModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +39,12 @@ class BaseAgent(ABC):
         name: str,
         event_bus: EventBus,
         learner_models: dict[str, LearnerModel],
+        session: AsyncSession | None = None,
     ) -> None:
         self.name = name
         self.event_bus = event_bus
         self.learner_models = learner_models
+        self.session = session
         self._register_handlers()
         logger.info("[%s] Agent initialized", self.name)
 
