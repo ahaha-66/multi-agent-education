@@ -26,19 +26,28 @@ class ReviewItem(BaseModel):
     easiness_factor: float = 2.5  # EF因子，范围[1.3, 2.5]
     interval_days: float = 0  # 当前复习间隔（天）
     repetition: int = 0  # 成功复习次数
-    next_review: datetime = Field(default_factory=datetime.now)
+    due_at: datetime = Field(default_factory=datetime.now)
     last_review: datetime | None = None
     total_reviews: int = 0
 
     @property
+    def next_review(self) -> datetime:
+        """兼容字段名：due_at 别名。"""
+        return self.due_at
+
+    @next_review.setter
+    def next_review(self, value: datetime) -> None:
+        self.due_at = value
+
+    @property
     def is_due(self) -> bool:
         """是否到了复习时间。"""
-        return datetime.now() >= self.next_review
+        return datetime.now() >= self.due_at
 
     @property
     def overdue_days(self) -> float:
         """逾期天数（负数表示还没到期）。"""
-        delta = datetime.now() - self.next_review
+        delta = datetime.now() - self.due_at
         return delta.total_seconds() / 86400
 
 

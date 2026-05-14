@@ -29,8 +29,10 @@ class KnowledgeState(Base):
     beta: Mapped[float] = mapped_column(Float, default=9.0)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     correct_count: Mapped[int] = mapped_column(Integer, default=0)
+    wrong_streak: Mapped[int] = mapped_column(Integer, default=0)
     last_attempt: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     streak: Mapped[int] = mapped_column(Integer, default=0)
+    version: Mapped[int] = mapped_column(Integer, default=1)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
@@ -47,14 +49,15 @@ class ReviewItem(Base):
     easiness_factor: Mapped[float] = mapped_column(Float, default=2.5)
     interval_days: Mapped[float] = mapped_column(Float, default=0)
     repetition: Mapped[int] = mapped_column(Integer, default=0)
-    next_review: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    due_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     last_review: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     total_reviews: Mapped[int] = mapped_column(Integer, default=0)
+    version: Mapped[int] = mapped_column(Integer, default=1)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
-    __table_args__ = (Index("ix_review_item_learner_id_due_at", "learner_id", "next_review"),)
+    __table_args__ = (Index("ix_review_item_learner_id_due_at", "learner_id", "due_at"),)
 
 
 class Attempt(Base):
@@ -63,6 +66,7 @@ class Attempt(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     learner_id: Mapped[str] = mapped_column(String, index=True)
     knowledge_id: Mapped[str] = mapped_column(String, index=True)
+    exercise_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False)
     time_spent_seconds: Mapped[float] = mapped_column(Float, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, index=True)
@@ -78,4 +82,5 @@ class EventLog(Base):
     learner_id: Mapped[str] = mapped_column(String, index=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, index=True)
     correlation_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String, default="ok")
     payload: Mapped[dict] = mapped_column(JSONB, default=dict)

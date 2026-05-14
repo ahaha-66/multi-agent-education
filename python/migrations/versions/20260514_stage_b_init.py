@@ -26,8 +26,10 @@ def upgrade() -> None:
         sa.Column("beta", sa.Float(), nullable=False),
         sa.Column("attempts", sa.Integer(), nullable=False),
         sa.Column("correct_count", sa.Integer(), nullable=False),
+        sa.Column("wrong_streak", sa.Integer(), nullable=False, server_default="0"),
         sa.Column("last_attempt", sa.DateTime(timezone=True), nullable=True),
         sa.Column("streak", sa.Integer(), nullable=False),
+        sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     )
     op.create_index("ix_knowledge_state_learner_id", "knowledge_state", ["learner_id"])
@@ -39,15 +41,16 @@ def upgrade() -> None:
         sa.Column("easiness_factor", sa.Float(), nullable=False),
         sa.Column("interval_days", sa.Float(), nullable=False),
         sa.Column("repetition", sa.Integer(), nullable=False),
-        sa.Column("next_review", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("due_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("last_review", sa.DateTime(timezone=True), nullable=True),
         sa.Column("total_reviews", sa.Integer(), nullable=False),
+        sa.Column("version", sa.Integer(), nullable=False, server_default="1"),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     )
     op.create_index(
         "ix_review_item_learner_id_due_at",
         "review_item",
-        ["learner_id", "next_review"],
+        ["learner_id", "due_at"],
     )
 
     op.create_table(
@@ -55,6 +58,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column("learner_id", sa.String(), nullable=False),
         sa.Column("knowledge_id", sa.String(), nullable=False),
+        sa.Column("exercise_id", sa.String(), nullable=True),
         sa.Column("is_correct", sa.Boolean(), nullable=False),
         sa.Column("time_spent_seconds", sa.Float(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
@@ -62,6 +66,7 @@ def upgrade() -> None:
     )
     op.create_index("ix_attempt_learner_id", "attempt", ["learner_id"])
     op.create_index("ix_attempt_knowledge_id", "attempt", ["knowledge_id"])
+    op.create_index("ix_attempt_exercise_id", "attempt", ["exercise_id"])
     op.create_index("ix_attempt_created_at", "attempt", ["created_at"])
     op.create_index("ix_attempt_correlation_id", "attempt", ["correlation_id"])
 
@@ -73,6 +78,7 @@ def upgrade() -> None:
         sa.Column("learner_id", sa.String(), nullable=False),
         sa.Column("timestamp", sa.DateTime(timezone=True), nullable=False),
         sa.Column("correlation_id", sa.String(), nullable=True),
+        sa.Column("status", sa.String(), nullable=False, server_default="ok"),
         sa.Column("payload", postgresql.JSONB(), nullable=False),
     )
     op.create_index("ix_event_log_type", "event_log", ["type"])
@@ -90,6 +96,7 @@ def downgrade() -> None:
 
     op.drop_index("ix_attempt_correlation_id", table_name="attempt")
     op.drop_index("ix_attempt_created_at", table_name="attempt")
+    op.drop_index("ix_attempt_exercise_id", table_name="attempt")
     op.drop_index("ix_attempt_knowledge_id", table_name="attempt")
     op.drop_index("ix_attempt_learner_id", table_name="attempt")
     op.drop_table("attempt")

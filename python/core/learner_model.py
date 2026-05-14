@@ -39,6 +39,7 @@ class KnowledgeState(BaseModel):
     beta: float = 9.0  # Beta分布参数β（失败次数+1）
     attempts: int = 0
     correct_count: int = 0
+    wrong_streak: int = 0  # 连续错误次数
     last_attempt: datetime | None = None
     streak: int = 0  # 连续正确次数
 
@@ -125,11 +126,13 @@ class LearnerModel:
             p_obs_given_not_l = self.bkt.p_guess
             state.correct_count += 1
             state.streak += 1
+            state.wrong_streak = 0
             state.alpha += 1
         else:
             p_obs_given_l = self.bkt.p_slip
             p_obs_given_not_l = 1 - self.bkt.p_guess
             state.streak = 0
+            state.wrong_streak += 1
             state.beta += 1
 
         # 贝叶斯更新

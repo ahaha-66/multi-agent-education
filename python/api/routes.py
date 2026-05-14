@@ -13,6 +13,7 @@ class SubmitAnswerRequest(BaseModel):
     knowledge_id: str
     is_correct: bool
     time_spent_seconds: float = 0
+    exercise_id: str | None = None
     correlation_id: str | None = None
 
 
@@ -58,6 +59,7 @@ async def submit_answer(req: SubmitAnswerRequest, request: Request):
         req.is_correct,
         req.time_spent_seconds,
         correlation_id=correlation_id,
+        exercise_id=req.exercise_id,
     )
     return {
         "status": "processed",
