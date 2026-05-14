@@ -52,7 +52,12 @@ class AgentOrchestrator:
         )
 
     async def submit_answer(
-        self, learner_id: str, knowledge_id: str, is_correct: bool, time_spent: float = 0
+        self,
+        learner_id: str,
+        knowledge_id: str,
+        is_correct: bool,
+        time_spent: float = 0,
+        correlation_id: str | None = None,
     ) -> list[Event]:
         """学生提交答案 -> 触发完整的Agent处理链。"""
         event = Event(
@@ -64,12 +69,13 @@ class AgentOrchestrator:
                 "is_correct": is_correct,
                 "time_spent_seconds": time_spent,
             },
+            correlation_id=correlation_id,
         )
         await self.event_bus.publish(event)
         return self.event_bus.get_history(learner_id=learner_id, limit=20)
 
     async def ask_question(
-        self, learner_id: str, knowledge_id: str, question: str
+        self, learner_id: str, knowledge_id: str, question: str, correlation_id: str | None = None
     ) -> list[Event]:
         """学生提问 -> 触发Assessment + Tutor处理。"""
         event = Event(
@@ -77,12 +83,17 @@ class AgentOrchestrator:
             source="api",
             learner_id=learner_id,
             data={"knowledge_id": knowledge_id, "question": question},
+            correlation_id=correlation_id,
         )
         await self.event_bus.publish(event)
         return self.event_bus.get_history(learner_id=learner_id, limit=20)
 
     async def send_message(
-        self, learner_id: str, message: str, knowledge_id: str = "general"
+        self,
+        learner_id: str,
+        message: str,
+        knowledge_id: str = "general",
+        correlation_id: str | None = None,
     ) -> list[Event]:
         """学生发送消息 -> 触发Tutor对话。"""
         event = Event(
@@ -90,6 +101,7 @@ class AgentOrchestrator:
             source="api",
             learner_id=learner_id,
             data={"message": message, "knowledge_id": knowledge_id},
+            correlation_id=correlation_id,
         )
         await self.event_bus.publish(event)
         return self.event_bus.get_history(learner_id=learner_id, limit=20)

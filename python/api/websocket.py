@@ -11,6 +11,7 @@ WebSocket 实时通信端点。
 
 import json
 import logging
+import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
@@ -41,6 +42,17 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+def _to_event_payload(event):
+    return {
+        "event_id": event.id,
+        "type": event.type.value,
+        "source": event.source,
+        "learner_id": event.learner_id,
+        "correlation_id": event.correlation_id,
+        "timestamp": event.timestamp.isoformat(),
+        "data": event.data,
+    }
+
 
 @ws_router.websocket("/ws/{learner_id}")
 async def websocket_endpoint(websocket: WebSocket, learner_id: str):
@@ -50,6 +62,7 @@ async def websocket_endpoint(websocket: WebSocket, learner_id: str):
             raw = await websocket.receive_text()
             data = json.loads(raw)
             action = data.get("action", "")
+            correlation_id = data.get("correlation_id") or str(uuid.uuid4())
 
             orch = websocket.app.state.orchestrator
 
@@ -59,33 +72,39 @@ async def websocket_endpoint(websocket: WebSocket, learner_id: str):
                     data.get("knowledge_id", ""),
                     data.get("is_correct", False),
                     data.get("time_spent_seconds", 0),
+                    correlation_id=correlation_id,
                 )
             elif action == "question":
                 events = await orch.ask_question(
                     learner_id,
                     data.get("knowledge_id", ""),
                     data.get("question", ""),
+                    correlation_id=correlation_id,
                 )
             elif action == "message":
                 events = await orch.send_message(
                     learner_id,
                     data.get("message", ""),
                     data.get("knowledge_id", "general"),
+                    correlation_id=correlation_id,
                 )
             else:
-                await manager.send_to_learner(learner_id, {"error": f"Unknown action: {action}"})
-                continue
-
-            for event in events[-10:]:
                 await manager.send_to_learner(
                     learner_id,
                     {
-                        "event_type": event.type.value,
-                        "source": event.source,
-                        "data": event.data,
-                        "timestamp": event.timestamp.isoformat(),
+                        "event_id": str(uuid.uuid4()),
+                        "type": "ws.error",
+                        "source": "ws",
+                        "learner_id": learner_id,
+                        "correlation_id": correlation_id,
+                        "timestamp": None,
+                        "data": {"message": f"Unknown action: {action}"},
                     },
                 )
+                continue
+
+            for event in events[-10:]:
+                await manager.send_to_learner(learner_id, _to_event_payload(event))
 
     except WebSocketDisconnect:
         manager.disconnect(learner_id)

@@ -54,15 +54,16 @@ class CurriculumAgent(BaseAgent):
         learner_id = event.learner_id
         knowledge_id = event.data.get("knowledge_id", "")
         mastery = event.data.get("mastery", 0.0)
+        correlation_id = event.correlation_id
 
         quality = self._mastery_to_quality(mastery)
         review_item = self._get_review_item(learner_id, knowledge_id)
         self.sr.review(review_item, quality)
 
         if mastery >= MASTERY_THRESHOLD:
-            await self._check_and_recommend_next(learner_id)
+            await self._check_and_recommend_next(learner_id, correlation_id)
 
-        await self._send_review_schedule(learner_id)
+        await self._send_review_schedule(learner_id, correlation_id)
 
     def _mastery_to_quality(self, mastery: float) -> int:
         """将mastery概率映射到SM-2的quality评分 (0-5)。"""
@@ -87,7 +88,9 @@ class CurriculumAgent(BaseAgent):
             items[knowledge_id] = ReviewItem(knowledge_id=knowledge_id)
         return items[knowledge_id]
 
-    async def _check_and_recommend_next(self, learner_id: str) -> None:
+    async def _check_and_recommend_next(
+        self, learner_id: str, correlation_id: str | None
+    ) -> None:
         """检查是否有新的可学知识点推荐。"""
         model = self.get_learner_model(learner_id)
         mastered_ids = {
@@ -110,9 +113,12 @@ class CurriculumAgent(BaseAgent):
                     "reason": "前置知识已掌握，推荐学习新内容",
                     "alternatives": ready[1:4],
                 },
+                correlation_id=correlation_id,
             )
 
-    async def _send_review_schedule(self, learner_id: str) -> None:
+    async def _send_review_schedule(
+        self, learner_id: str, correlation_id: str | None
+    ) -> None:
         """发送复习计划。"""
         items = list(self._review_items.get(learner_id, {}).values())
         due_items = self.sr.get_due_items(items)
@@ -129,12 +135,14 @@ class CurriculumAgent(BaseAgent):
                     ],
                     "weekly_schedule": schedule,
                 },
+                correlation_id=correlation_id,
             )
 
     async def _handle_weakness(self, event: Event) -> None:
         """处理薄弱知识点，规划补救路径。"""
         learner_id = event.learner_id
         knowledge_id = event.data.get("knowledge_id", "")
+        correlation_id = event.correlation_id
 
         model = self.get_learner_model(learner_id)
         mastered_ids = {
@@ -154,6 +162,7 @@ class CurriculumAgent(BaseAgent):
                 "remedial_path": remedial_path,
                 "message": f"检测到「{knowledge_id}」薄弱，建议先复习前置知识",
             },
+            correlation_id=correlation_id,
         )
 
     async def _handle_pace_adjustment(self, event: Event) -> None:

@@ -60,13 +60,20 @@ class BaseAgent(ABC):
         """子类实现事件处理逻辑。"""
         ...
 
-    async def emit(self, event_type: EventType, learner_id: str, data: dict) -> None:
+    async def emit(
+        self,
+        event_type: EventType,
+        learner_id: str,
+        data: dict,
+        correlation_id: str | None = None,
+    ) -> None:
         """便捷方法：发布事件。"""
         event = Event(
             type=event_type,
             source=self.name,
             learner_id=learner_id,
             data=data,
+            correlation_id=correlation_id,
         )
         await self.event_bus.publish(event)
 

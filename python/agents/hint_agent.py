@@ -103,6 +103,7 @@ class HintAgent(BaseAgent):
         knowledge_id = event.data.get("knowledge_id", "")
         mastery = event.data.get("mastery", 0.0)
         attempts = event.data.get("attempts", 1)
+        correlation_id = event.correlation_id
 
         level = self._determine_hint_level(learner_id, knowledge_id, mastery, attempts)
 
@@ -137,6 +138,7 @@ class HintAgent(BaseAgent):
                 "hint_count": self._hint_history[key],
                 "description": HINT_TEMPLATES[level]["description"],
             },
+            correlation_id=correlation_id,
         )
 
     def _generate_hint(self, knowledge_id: str, level: int) -> str:

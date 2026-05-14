@@ -14,6 +14,7 @@
 import asyncio
 import logging
 import uuid
+from collections import deque
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Coroutine
@@ -81,9 +82,11 @@ class EventBus:
     4. 支持事件过滤和优先级（可选扩展）
     """
 
-    def __init__(self) -> None:
+    def __init__(self, max_history_per_learner: int = 200, max_global_history: int = 2000) -> None:
         self._subscribers: dict[EventType, list[EventHandler]] = {}
-        self._event_history: list[Event] = []
+        self._event_history_by_learner: dict[str, deque[Event]] = {}
+        self._event_history_global: deque[Event] = deque(maxlen=max_global_history)
+        self._max_history_per_learner = max_history_per_learner
         self._lock = asyncio.Lock()
 
     def subscribe(self, event_type: EventType, handler: EventHandler) -> None:
@@ -106,7 +109,12 @@ class EventBus:
         而不是串行调用，提高吞吐量。
         """
         async with self._lock:
-            self._event_history.append(event)
+            self._event_history_global.append(event)
+            if event.learner_id not in self._event_history_by_learner:
+                self._event_history_by_learner[event.learner_id] = deque(
+                    maxlen=self._max_history_per_learner
+                )
+            self._event_history_by_learner[event.learner_id].append(event)
 
         logger.info(
             "[EventBus] %s -> %s (learner=%s)",
@@ -141,13 +149,16 @@ class EventBus:
         limit: int = 50,
     ) -> list[Event]:
         """查询事件历史，支持按学习者和事件类型过滤。"""
-        events = self._event_history
         if learner_id:
-            events = [e for e in events if e.learner_id == learner_id]
+            events = list(self._event_history_by_learner.get(learner_id, []))
+        else:
+            events = list(self._event_history_global)
+
         if event_type:
             events = [e for e in events if e.type == event_type]
         return events[-limit:]
 
     def clear_history(self) -> None:
         """清空事件历史（用于测试）。"""
-        self._event_history.clear()
+        self._event_history_by_learner.clear()
+        self._event_history_global.clear()

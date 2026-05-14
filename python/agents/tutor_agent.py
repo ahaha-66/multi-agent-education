@@ -85,6 +85,7 @@ class TutorAgent(BaseAgent):
         mastery = event.data.get("mastery", 0.0)
         level = event.data.get("level", "beginner")
         is_correct = event.data.get("is_correct")
+        correlation_id = event.correlation_id
 
         prompt_template = SOCRATIC_PROMPTS.get(level, SOCRATIC_PROMPTS["beginner"])
 
@@ -103,6 +104,7 @@ class TutorAgent(BaseAgent):
                         "attempts": attempts,
                         "level": level,
                     },
+                    correlation_id=correlation_id,
                 )
                 return
 
@@ -120,6 +122,7 @@ class TutorAgent(BaseAgent):
                 "difficulty_level": level,
                 "prompt_template_used": level,
             },
+            correlation_id=correlation_id,
         )
 
     def _generate_teaching_response(
@@ -164,6 +167,7 @@ class TutorAgent(BaseAgent):
         learner_id = event.learner_id
         message = event.data.get("message", "")
         knowledge_id = event.data.get("knowledge_id", "general")
+        correlation_id = event.correlation_id
 
         model = self.get_learner_model(learner_id)
         state = model.get_state(knowledge_id)
@@ -181,6 +185,7 @@ class TutorAgent(BaseAgent):
                 "teaching_style": "socratic",
                 "difficulty_level": state.level.value,
             },
+            correlation_id=correlation_id,
         )
 
     async def _handle_hint_response(self, event: Event) -> None:
@@ -194,6 +199,7 @@ class TutorAgent(BaseAgent):
                 "teaching_style": "hint",
                 "hint_level": event.data.get("hint_level", 1),
             },
+            correlation_id=event.correlation_id,
         )
 
     async def _handle_engagement_alert(self, event: Event) -> None:

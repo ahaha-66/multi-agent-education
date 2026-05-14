@@ -130,6 +130,7 @@ class EngagementAgent(BaseAgent):
         old_state = eng.state
         new_state = self._detect_state(eng)
         eng.state = new_state
+        correlation_id = event.correlation_id
 
         if new_state != old_state:
             logger.info(
@@ -140,13 +141,13 @@ class EngagementAgent(BaseAgent):
             )
 
         if new_state == LearningState.FRUSTRATED:
-            await self._intervene_frustration(event.learner_id, eng)
+            await self._intervene_frustration(event.learner_id, eng, correlation_id)
         elif new_state == LearningState.BORED:
-            await self._intervene_boredom(event.learner_id, eng)
+            await self._intervene_boredom(event.learner_id, eng, correlation_id)
         elif new_state == LearningState.FATIGUED:
-            await self._intervene_fatigue(event.learner_id, eng)
+            await self._intervene_fatigue(event.learner_id, eng, correlation_id)
         elif new_state == LearningState.FOCUSED and eng.consecutive_correct >= 3:
-            await self._encourage(event.learner_id, eng)
+            await self._encourage(event.learner_id, eng, correlation_id)
 
     def _detect_state(self, eng: LearnerEngagement) -> LearningState:
         """
@@ -177,7 +178,9 @@ class EngagementAgent(BaseAgent):
 
         return LearningState.FOCUSED
 
-    async def _intervene_frustration(self, learner_id: str, eng: LearnerEngagement) -> None:
+    async def _intervene_frustration(
+        self, learner_id: str, eng: LearnerEngagement, correlation_id: str | None
+    ) -> None:
         """挫败干预：鼓励 + 通知降低难度。"""
         await self.emit(
             EventType.ENGAGEMENT_ALERT,
@@ -188,14 +191,18 @@ class EngagementAgent(BaseAgent):
                 "recent_accuracy": eng.recent_accuracy,
                 "message": "别灰心！犯错是学习的一部分。每个人都会遇到困难的知识点，让我们换一个方式来学习。",
             },
+            correlation_id=correlation_id,
         )
         await self.emit(
             EventType.PACE_ADJUSTMENT,
             learner_id,
             {"action": "slow_down", "reason": "frustration_detected"},
+            correlation_id=correlation_id,
         )
 
-    async def _intervene_boredom(self, learner_id: str, eng: LearnerEngagement) -> None:
+    async def _intervene_boredom(
+        self, learner_id: str, eng: LearnerEngagement, correlation_id: str | None
+    ) -> None:
         """无聊干预：建议进阶 + 通知提高难度。"""
         await self.emit(
             EventType.ENGAGEMENT_ALERT,
@@ -206,14 +213,18 @@ class EngagementAgent(BaseAgent):
                 "recent_accuracy": eng.recent_accuracy,
                 "message": "你表现得非常棒！看起来这些题目对你来说很简单了，让我们挑战更难的内容！",
             },
+            correlation_id=correlation_id,
         )
         await self.emit(
             EventType.PACE_ADJUSTMENT,
             learner_id,
             {"action": "speed_up", "reason": "boredom_detected"},
+            correlation_id=correlation_id,
         )
 
-    async def _intervene_fatigue(self, learner_id: str, eng: LearnerEngagement) -> None:
+    async def _intervene_fatigue(
+        self, learner_id: str, eng: LearnerEngagement, correlation_id: str | None
+    ) -> None:
         """疲劳干预：建议休息。"""
         await self.emit(
             EventType.ENCOURAGEMENT,
@@ -226,9 +237,12 @@ class EngagementAgent(BaseAgent):
                 "type": "fatigue_break",
                 "session_minutes": eng.session_duration_minutes,
             },
+            correlation_id=correlation_id,
         )
 
-    async def _encourage(self, learner_id: str, eng: LearnerEngagement) -> None:
+    async def _encourage(
+        self, learner_id: str, eng: LearnerEngagement, correlation_id: str | None
+    ) -> None:
         """正向鼓励。"""
         if eng.encouragement_count % 3 == 0:
             await self.emit(
@@ -239,5 +253,6 @@ class EngagementAgent(BaseAgent):
                     "type": "positive_streak",
                     "streak": eng.consecutive_correct,
                 },
+                correlation_id=correlation_id,
             )
         eng.encouragement_count += 1

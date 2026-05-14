@@ -53,6 +53,7 @@ class AssessmentAgent(BaseAgent):
         data = event.data
         knowledge_id = data.get("knowledge_id", "")
         is_correct = data.get("is_correct", False)
+        correlation_id = event.correlation_id
 
         model = self.get_learner_model(learner_id)
         state = model.update_mastery(knowledge_id, is_correct)
@@ -68,6 +69,7 @@ class AssessmentAgent(BaseAgent):
                 "streak": state.streak,
                 "confidence": state.confidence,
             },
+            correlation_id=correlation_id,
         )
 
         if state.mastery < 0.3 and state.attempts >= 3:
@@ -80,6 +82,7 @@ class AssessmentAgent(BaseAgent):
                     "attempts": state.attempts,
                     "suggestion": "需要回到前置知识点复习",
                 },
+                correlation_id=correlation_id,
             )
 
         await self.emit(
@@ -92,6 +95,7 @@ class AssessmentAgent(BaseAgent):
                 "level": state.level.value,
                 "overall_progress": model.get_overall_progress(),
             },
+            correlation_id=correlation_id,
         )
 
     async def _handle_question(self, event: Event) -> None:
@@ -99,6 +103,7 @@ class AssessmentAgent(BaseAgent):
         learner_id = event.learner_id
         question = event.data.get("question", "")
         knowledge_id = event.data.get("knowledge_id", "general")
+        correlation_id = event.correlation_id
 
         model = self.get_learner_model(learner_id)
         state = model.get_state(knowledge_id)
@@ -113,4 +118,5 @@ class AssessmentAgent(BaseAgent):
                 "current_level": state.level.value,
                 "context": "student_question",
             },
+            correlation_id=correlation_id,
         )
