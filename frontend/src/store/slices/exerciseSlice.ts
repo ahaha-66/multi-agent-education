@@ -13,6 +13,7 @@ interface ExerciseState {
   isSubmitting: boolean;
   hintLevel: number;
   error: string | null;
+  loading: boolean;
 }
 
 const initialState: ExerciseState = {
@@ -22,6 +23,7 @@ const initialState: ExerciseState = {
   isSubmitting: false,
   hintLevel: 0,
   error: null,
+  loading: false,
 };
 
 export const fetchNextExercise = createAsyncThunk(
@@ -78,15 +80,18 @@ const exerciseSlice = createSlice({
     builder
       .addCase(fetchNextExercise.pending, (state) => {
         state.error = null;
+        state.loading = true;
       })
       .addCase(fetchNextExercise.fulfilled, (state, action) => {
         state.current = action.payload;
         state.answer = null;
         state.feedback = null;
         state.hintLevel = 0;
+        state.loading = false;
       })
       .addCase(fetchNextExercise.rejected, (state, action) => {
         state.error = action.error.message || 'Failed to fetch exercise';
+        state.loading = false;
       })
       .addCase(submitAnswer.pending, (state) => {
         state.isSubmitting = true;
