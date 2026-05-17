@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { Row, Col, Card, Button, Statistic, Progress, Spin, List } from 'antd';
 import { BookOutlined, ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../../store';
-import { fetchOverallProgress } from '../../store/slices/progressSlice';
-import { fetchCourses } from '../../store/slices/courseSlice';
+import { useAppSelector, useAppDispatch } from '../store';
+import { fetchOverallProgress } from '../store/slices/progressSlice';
+import { fetchCourses } from '../store/slices/courseSlice';
 
 export default function HomePage() {
   const navigate = useNavigate();
