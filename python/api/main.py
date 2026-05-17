@@ -22,6 +22,7 @@ from api.orchestrator import AgentOrchestrator
 from api.routes_course import router as course_router
 from api.routes_admin import router as admin_router
 from api.routes_kg_admin import router as kg_admin_router
+from api.routes_progress import router as progress_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -70,6 +71,7 @@ app.include_router(router, prefix="/api/v1")
 app.include_router(course_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
 app.include_router(kg_admin_router, prefix="/api/v1")
+app.include_router(progress_router, prefix="/api/v1")
 app.include_router(ws_router)
 
 if __name__ == "__main__":

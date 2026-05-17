@@ -196,7 +196,6 @@ class Exercise(Base):
 
 class LearnerExerciseHistory(Base):
     __tablename__ = "learner_exercise_history"
-
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
     learner_id: Mapped[str] = mapped_column(String, index=True)
     exercise_id: Mapped[str] = mapped_column(String, index=True)
@@ -209,4 +208,67 @@ class LearnerExerciseHistory(Base):
     __table_args__ = (
         Index("ix_learner_exercise_learner_id", "learner_id"),
         Index("ix_learner_exercise_exercise_id", "exercise_id"),
+    )
+
+
+class LearnerGoal(Base):
+    __tablename__ = "learner_goal"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
+    learner_id: Mapped[str] = mapped_column(String, index=True)
+    course_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    target_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(String, default="pending", index=True)
+    progress: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    __table_args__ = (
+        Index("ix_learner_goal_learner_id", "learner_id"),
+    )
+
+
+class LearnerTask(Base):
+    __tablename__ = "learner_task"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
+    goal_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    learner_id: Mapped[str] = mapped_column(String, index=True)
+    knowledge_point_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    exercise_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    type: Mapped[str] = mapped_column(String, default="learn")
+    status: Mapped[str] = mapped_column(String, default="pending", index=True)
+    priority: Mapped[int] = mapped_column(Integer, default=3)
+    due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    order_index: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_learner_task_learner_id", "learner_id"),
+    )
+
+
+class MistakeRecord(Base):
+    __tablename__ = "mistake_record"
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
+    learner_id: Mapped[str] = mapped_column(String, index=True)
+    exercise_id: Mapped[str] = mapped_column(String, index=True)
+    knowledge_point_id: Mapped[str] = mapped_column(String, index=True)
+    first_wrong_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    last_wrong_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    wrong_count: Mapped[int] = mapped_column(Integer, default=1)
+    last_attempt_answer: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    is_resolved: Mapped[bool] = mapped_column(Boolean, default=False)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_mistake_record_learner_id", "learner_id"),
+        Index("ix_mistake_record_exercise_id", "exercise_id"),
+        Index("ix_mistake_record_kp_id", "knowledge_point_id"),
     )

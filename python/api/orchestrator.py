@@ -9,12 +9,13 @@ Agent 编排器 -- 初始化所有Agent并连接到EventBus。
 
 import logging
 
-from config.settings import settings
+from config.settings import settings, _get_sessionmaker
 from core.event_bus import Event, EventBus, EventType
 from core.learner_model import LearnerModel
 from db.persistence import PersistenceService
 from db.session import create_engine, create_sessionmaker
 from services.knowledge_graph_service import KnowledgeGraphService
+from services.mistake_service import MistakeService
 from agents import (
     AssessmentAgent,
     TutorAgent,
@@ -118,6 +119,7 @@ class AgentOrchestrator:
         time_spent: float = 0,
         correlation_id: str | None = None,
         exercise_id: str | None = None,
+        user_answer: dict | None = None,
     ) -> list[Event]:
         """学生提交答案 -> 触发完整的Agent处理链。"""
         await self._ensure_loaded(learner_id)
@@ -129,6 +131,17 @@ class AgentOrchestrator:
             correlation_id=correlation_id,
             exercise_id=exercise_id,
         )
+        
+        # 记录错题
+        if not is_correct and exercise_id:
+            async with self._sessionmaker() as session:
+                mistake_service = MistakeService(session)
+                await mistake_service.record_mistake(
+                    learner_id=learner_id,
+                    exercise_id=exercise_id,
+                    answer=user_answer,
+                )
+        
         event = Event(
             type=EventType.STUDENT_SUBMISSION,
             source="api",
