@@ -26,6 +26,10 @@ export default function HomePage() {
     navigate(`/courses/${courseId}`);
   };
 
+  const handleReview = () => {
+    navigate('/courses');
+  };
+
   const totalProgress = overall?.overall_progress || 0;
   const totalMistakes = 0;
 
@@ -114,7 +118,7 @@ export default function HomePage() {
               renderItem={(item) => (
                 <List.Item
                   actions={[
-                    <Button type="link" key="review">
+                    <Button type="link" key="review" onClick={handleReview}>
                       复习
                     </Button>,
                   ]}

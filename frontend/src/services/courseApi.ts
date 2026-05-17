@@ -3,7 +3,7 @@ import type { Course, CourseCatalog, KnowledgeGraph, ExerciseRecommendation } fr
 import type { AnswerVerificationRequest, AnswerVerificationResponse } from '../types/exercise';
 
 export const courseApi = {
-  getCourses: () => api.get<{ data: Course[] }>('/api/v1/courses'),
+  getCourses: () => api.get<Course[]>('/api/v1/courses'),
 
   getCourse: (courseId: string) => api.get<Course>(`/api/v1/courses/${courseId}`),
 

@@ -26,11 +26,6 @@ const items: MenuItem[] = [
   label: '课程',
 },
 {
-  key: '/practice',
-  icon: <BookFilled />,
-  label: '练习',
-},
-{
   key: '/mistakes',
   icon: <FileTextOutlined />,
   label: '错题本',

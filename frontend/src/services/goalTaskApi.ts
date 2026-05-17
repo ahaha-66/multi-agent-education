@@ -9,7 +9,7 @@ import type {
 
 export const goalTaskApi = {
   getGoals: (learnerId: string, status?: string, courseId?: string) =>
-    api.get<{ data: LearnerGoal[] }>(`/api/v1/learners/${learnerId}/goals`, {
+    api.get<LearnerGoal[]>(`/api/v1/learners/${learnerId}/goals`, {
       params: {
         status,
         course_id: courseId,
@@ -26,7 +26,7 @@ export const goalTaskApi = {
     api.post<LearnerGoal>(`/api/v1/learners/${learnerId}/goals/${goalId}/complete`),
 
   getTasks: (learnerId: string, goalId?: string, status?: string) =>
-    api.get<{ data: LearnerTask[] }>(`/api/v1/learners/${learnerId}/tasks`, {
+    api.get<LearnerTask[]>(`/api/v1/learners/${learnerId}/tasks`, {
       params: {
         goal_id: goalId,
         status,

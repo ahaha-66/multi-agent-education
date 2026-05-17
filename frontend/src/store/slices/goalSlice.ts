@@ -35,8 +35,7 @@ export const fetchGoals = createAsyncThunk(
     status?: string;
     courseId?: string;
   }) => {
-    const response = await goalTaskApi.getGoals(learnerId, status, courseId);
-    return response.data;
+    return await goalTaskApi.getGoals(learnerId, status, courseId);
   }
 );
 
@@ -86,8 +85,7 @@ export const fetchTasks = createAsyncThunk(
     goalId?: string;
     status?: string;
   }) => {
-    const response = await goalTaskApi.getTasks(learnerId, goalId, status);
-    return response.data;
+    return await goalTaskApi.getTasks(learnerId, goalId, status);
   }
 );
 
