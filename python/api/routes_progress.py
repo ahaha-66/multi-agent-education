@@ -72,6 +72,15 @@ async def list_mistakes(
     )
 
 
+@router.get("/learners/{learner_id}/mistakes/statistics", response_model=MistakeStatistics)
+async def get_mistake_statistics(
+    learner_id: str,
+    session: AsyncSession = Depends(get_db_session)
+):
+    service = MistakeService(session)
+    return await service.get_statistics(learner_id)
+
+
 @router.get("/learners/{learner_id}/mistakes/{mistake_id}", response_model=MistakeRecordDetail)
 async def get_mistake(
     learner_id: str,
@@ -97,15 +106,6 @@ async def resolve_mistake(
         return await service.get_mistake(mistake_id, learner_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-
-
-@router.get("/learners/{learner_id}/mistakes/statistics", response_model=MistakeStatistics)
-async def get_mistake_statistics(
-    learner_id: str,
-    session: AsyncSession = Depends(get_db_session)
-):
-    service = MistakeService(session)
-    return await service.get_statistics(learner_id)
 
 
 @router.get("/learners/{learner_id}/goals", response_model=list[LearnerGoalBrief])
