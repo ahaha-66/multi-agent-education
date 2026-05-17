@@ -24,7 +24,7 @@ from services.goal_task_service import GoalTaskService
 
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/v1", tags=["Progress, Mistakes, Goals"])
+router = APIRouter(tags=["Progress, Mistakes, Goals"])
 
 
 @router.get("/learners/{learner_id}/progress", response_model=OverallProgress)

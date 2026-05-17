@@ -29,7 +29,7 @@ from services.exercise_recommender import ExerciseRecommender
 
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/v1", tags=["课程内容"])
+router = APIRouter(tags=["课程内容"])
 
 
 @router.get("/courses", response_model=list[CourseInfo])

@@ -17,7 +17,7 @@ from db.seed import CourseContentSeeder
 
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/v1/admin", tags=["管理员"])
+router = APIRouter(prefix="/admin", tags=["管理员"])
 
 
 @router.post("/seed", response_model=SeedStatusResponse)

@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/v1/admin", tags=["知识图谱管理"])
+router = APIRouter(prefix="/admin", tags=["知识图谱管理"])
 
 
 class KnowledgeGraphInitRequest(BaseModel):

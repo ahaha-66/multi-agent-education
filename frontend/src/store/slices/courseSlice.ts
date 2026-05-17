@@ -23,8 +23,7 @@ const initialState: CourseState = {
 };
 
 export const fetchCourses = createAsyncThunk('course/fetchCourses', async () => {
-  const response = await courseApi.getCourses();
-  return response.data;
+  return await courseApi.getCourses();
 });
 
 export const fetchCourse = createAsyncThunk(
