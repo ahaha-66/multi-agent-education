@@ -70,6 +70,7 @@ class CourseContentSeeder:
             all_kps.extend(kps)
             all_edges.extend(edges)
 
+        stats["knowledge_edge"] = await self._create_knowledge_edges(all_kps, course_id)
         stats["exercise"] = await self._import_exercises(all_kps, force)
 
         await self._session.commit()
