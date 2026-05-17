@@ -206,11 +206,16 @@ export default function PracticePage() {
                       </Space>
                     )
                   }
-                  subTitle={`正确答案: ${feedback.correct_answer}`}
+                  subTitle={`正确答案: ${feedback.correct_answer?.value || feedback.correct_answer}`}
                   extra={
                     feedback.analysis && (
                       <Card type="inner" title="解析">
-                        <Paragraph>{feedback.analysis}</Paragraph>
+                        <Paragraph>{feedback.analysis.text}</Paragraph>
+                        {feedback.analysis.key_point && (
+                          <Paragraph type="secondary" style={{ marginTop: 8 }}>
+                            关键点: {feedback.analysis.key_point}
+                          </Paragraph>
+                        )}
                       </Card>
                     )
                   }

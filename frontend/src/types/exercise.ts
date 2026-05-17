@@ -37,9 +37,14 @@ export interface AnswerVerificationRequest {
   answer: any;
 }
 
+export interface AnswerAnalysis {
+  text: string;
+  key_point: string;
+}
+
 export interface AnswerVerificationResponse {
   exercise_id: string;
   is_correct: boolean;
-  correct_answer: any;
-  analysis?: string;
+  correct_answer: { value: string };
+  analysis?: AnswerAnalysis;
 }
