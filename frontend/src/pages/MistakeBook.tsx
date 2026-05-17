@@ -216,7 +216,7 @@ export default function MistakeBookPage() {
           <div>
             <Title level={5}>题目内容</Title>
             <Card size="small" style={{ marginBottom: 16 }}>
-              <Text>{mistakeDetail.content.stem}</Text>
+              <Text>{mistakeDetail.content?.stem || '题目内容加载失败'}</Text>
             </Card>
 
             <Row gutter={16}>
@@ -224,7 +224,7 @@ export default function MistakeBookPage() {
                 <Title level={5}>错误答案</Title>
                 <Card size="small" type="inner" style={{ background: '#fff2f0' }}>
                   <Text type="danger">
-                    {mistakeDetail.last_attempt_answer}
+                    {mistakeDetail.last_attempt_answer || '无错误答案'}
                   </Text>
                 </Card>
               </Col>
@@ -232,7 +232,13 @@ export default function MistakeBookPage() {
                 <Title level={5}>正确答案</Title>
                 <Card size="small" type="inner" style={{ background: '#f6ffed' }}>
                   <Text type="success">
-                    {mistakeDetail.correct_answer}
+                    {(() => {
+                      const ans = mistakeDetail.correct_answer;
+                      if (typeof ans === 'object' && ans !== null) {
+                        return ans.value || JSON.stringify(ans);
+                      }
+                      return ans || '无正确答案';
+                    })()}
                   </Text>
                 </Card>
               </Col>
@@ -244,7 +250,15 @@ export default function MistakeBookPage() {
                   解析
                 </Title>
                 <Card size="small">
-                  <Text>{mistakeDetail.analysis}</Text>
+                  <Text>
+                    {(() => {
+                      const analysis = mistakeDetail.analysis;
+                      if (typeof analysis === 'object' && analysis !== null) {
+                        return analysis.text || JSON.stringify(analysis);
+                      }
+                      return analysis;
+                    })()}
+                  </Text>
                 </Card>
               </>
             )}
@@ -252,12 +266,12 @@ export default function MistakeBookPage() {
             <Row gutter={16} style={{ marginTop: 16 }}>
               <Col span={12}>
                 <Text type="secondary">
-                  知识点: {mistakeDetail.knowledge_point_name}
+                  知识点: {mistakeDetail.knowledge_point_name || '未知'}
                 </Text>
               </Col>
               <Col span={12}>
                 <Text type="secondary">
-                  错误次数: {mistakeDetail.wrong_count}
+                  错误次数: {mistakeDetail.wrong_count || 0}
                 </Text>
               </Col>
             </Row>
