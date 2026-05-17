@@ -1,7 +1,31 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, Card, Button, Progress, Spin, Tree, Typography } from 'antd';
-import { ArrowLeftOutlined, BranchesOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import { 
+  Row, 
+  Col, 
+  Card, 
+  Button, 
+  Progress, 
+  Spin, 
+  Tree, 
+  Typography,
+  Space,
+  Tag,
+  List,
+  Empty,
+  Statistic,
+  Tooltip,
+  Divider,
+} from 'antd';
+import { 
+  ArrowLeftOutlined, 
+  BranchesOutlined, 
+  PlayCircleOutlined,
+  BookOutlined,
+  CheckCircleOutlined,
+  StarOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import { useAppSelector, useAppDispatch } from '../store';
 import {
   fetchCourse,
@@ -11,7 +35,7 @@ import {
 } from '../store/slices/courseSlice';
 import { fetchCourseProgress } from '../store/slices/progressSlice';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { DirectoryTree } = Tree;
 
 export default function CourseDetailPage() {
@@ -47,6 +71,12 @@ export default function CourseDetailPage() {
     }
   };
 
+  const handleStartPractice = () => {
+    if (courseId) {
+      navigate(`/courses/${courseId}/practice`);
+    }
+  };
+
   const handleGoToKnowledgeGraph = () => {
     if (courseId) {
       dispatch(fetchKnowledgeGraph(courseId));
@@ -56,81 +86,191 @@ export default function CourseDetailPage() {
 
   const treeData = catalog?.chapters.map((chapter) => ({
     key: chapter.id,
-    title: chapter.name,
+    title: (
+      <Space>
+        <BookOutlined />
+        <Text strong>{chapter.name}</Text>
+        <Tag color="blue">{chapter.knowledge_points.length}个知识点</Tag>
+      </Space>
+    ),
     children: chapter.knowledge_points.map((kp) => ({
       key: kp.id,
-      title: kp.name,
+      title: (
+        <Space>
+          <Text>{kp.name}</Text>
+          <Tooltip title={`难度: ${kp.difficulty}`}>
+            <StarOutlined style={{ color: '#faad14' }} />
+          </Tooltip>
+        </Space>
+      ),
     })),
   }));
 
-  return (
-    <Spin spinning={loading}>
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Button type="text" icon={<ArrowLeftOutlined />} onClick={handleGoBack}>
-            返回课程列表
-          </Button>
-        </Col>
+  const totalKnowledgePoints = catalog?.chapters.reduce(
+    (sum, ch) => sum + ch.knowledge_points.length, 
+    0
+  ) || 0;
 
-        <Col span={16}>
+  const masteredPoints = courseProgress?.knowledge_mastery?.filter(
+    (km: any) => km.mastery > 0.7
+  )?.length || 0;
+
+  return (
+    <Spin spinning={loading} tip="加载课程信息...">
+      <div style={{ marginBottom: 16 }}>
+        <Button 
+          type="text" 
+          icon={<ArrowLeftOutlined />} 
+          onClick={handleGoBack}
+        >
+          返回课程列表
+        </Button>
+      </div>
+
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={16}>
           <Card
-            title={course?.name}
+            title={
+              <Space>
+                <BookOutlined />
+                <span>{course?.name || '课程详情'}</span>
+              </Space>
+            }
             extra={
-              <Button
-                type="primary"
-                icon={<BranchesOutlined />}
-                onClick={handleGoToKnowledgeGraph}
-              >
-                知识图谱
-              </Button>
+              <Space>
+                <Button
+                  icon={<BranchesOutlined />}
+                  onClick={handleGoToKnowledgeGraph}
+                >
+                  知识图谱
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<PlayCircleOutlined />}
+                  onClick={handleStartPractice}
+                >
+                  开始练习
+                </Button>
+              </Space>
             }
           >
-            <Row gutter={16}>
-              <Col span={24}>
-                <Text strong>总进度:</Text>
-                <Progress
-                  percent={Math.round(overallProgress * 100)}
-                  style={{ marginLeft: 8 }}
-                />
-                <p style={{ marginTop: 8 }}>
-                  完成章节: {courseProgress?.completed_chapters} / {courseProgress?.total_chapters}
-                </p>
-                <p>
-                  掌握知识点: {courseProgress?.mastered_knowledge_points} / {courseProgress?.total_knowledge_points}
-                </p>
-              </Col>
-            </Row>
+            {course && (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <Space wrap>
+                    <Tag color="blue">{course.subject}</Tag>
+                    {course.grade_level && (
+                      <Tag color="green">{course.grade_level}年级</Tag>
+                    )}
+                    {course.description && (
+                      <Text type="secondary">{course.description}</Text>
+                    )}
+                  </Space>
+                </div>
 
-            <Title level={4} style={{ marginTop: 24 }}>
-              课程目录
-            </Title>
-            {treeData && treeData.length > 0 ? (
-              <DirectoryTree
-                multiple
-                defaultExpandAll
-                onSelect={handleSelectKnowledgePoint}
-                treeData={treeData}
-              />
-            ) : (
-              <Text type="secondary">暂无目录数据</Text>
+                <Card 
+                  type="inner" 
+                  title="课程章节"
+                  style={{ marginBottom: 16 }}
+                >
+                  {catalog && catalog.chapters.length > 0 ? (
+                    <DirectoryTree
+                      treeData={treeData}
+                      onSelect={(keys) => handleSelectKnowledgePoint(keys)}
+                      showLine={{ showLeafIcon: false }}
+                      blockNode
+                    />
+                  ) : (
+                    <Empty description="暂无章节信息" />
+                  )}
+                </Card>
+              </>
             )}
           </Card>
         </Col>
 
-        <Col span={8}>
-          <Card title="快速开始">
-            <Button
-              type="primary"
-              size="large"
+        <Col xs={24} lg={8}>
+          <Card title="学习进度">
+            <Card.Meta
+              title={
+                <div style={{ textAlign: 'center' }}>
+                  <Progress
+                    type="circle"
+                    percent={Math.round(overallProgress * 100)}
+                    strokeColor={{
+                      '0%': '#108ee9',
+                      '100%': '#87d068',
+                    }}
+                    format={(percent) => (
+                      <div>
+                        <div style={{ fontSize: 24, fontWeight: 'bold' }}>
+                          {percent}%
+                        </div>
+                        <div style={{ fontSize: 12 }}>完成度</div>
+                      </div>
+                    )}
+                  />
+                </div>
+              }
+            />
+            
+            <Divider />
+            
+            <Row gutter={16}>
+              <Col span={12}>
+                <Statistic 
+                  title="章节数" 
+                  value={catalog?.chapters.length || 0}
+                  prefix={<BookOutlined />}
+                  valueStyle={{ color: '#1890ff' }}
+                />
+              </Col>
+              <Col span={12}>
+                <Statistic 
+                  title="知识点" 
+                  value={totalKnowledgePoints}
+                  prefix={<TeamOutlined />}
+                  valueStyle={{ color: '#722ed1' }}
+                />
+              </Col>
+            </Row>
+
+            <Divider />
+
+            <Statistic 
+              title="已掌握" 
+              value={masteredPoints}
+              suffix={`/ ${totalKnowledgePoints}`}
+              prefix={<CheckCircleOutlined />}
+              valueStyle={{ color: '#52c41a' }}
+            />
+
+            <Divider />
+
+            <Button 
+              type="primary" 
+              block 
               icon={<PlayCircleOutlined />}
-              block
-              onClick={() => navigate(`/courses/${courseId}/practice`)}
+              onClick={handleStartPractice}
+              size="large"
             >
               开始练习
             </Button>
-            <p style={{ marginTop: 16 }}>
-              智能推荐适合你当前水平的练习题
-            </p>
+          </Card>
+
+          <Card 
+            title="快速入口" 
+            style={{ marginTop: 16 }}
+          >
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Button 
+                block 
+                icon={<BranchesOutlined />}
+                onClick={handleGoToKnowledgeGraph}
+              >
+                查看知识图谱
+              </Button>
+            </Space>
           </Card>
         </Col>
       </Row>

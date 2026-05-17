@@ -15,6 +15,8 @@ import KnowledgeGraphPage from './pages/KnowledgeGraph';
 import MistakeBookPage from './pages/MistakeBook';
 import GoalsTasksPage from './pages/GoalsTasks';
 import ProgressDashboardPage from './pages/ProgressDashboard';
+import ProfilePage from './pages/Profile';
+import SettingsPage from './pages/Settings';
 
 const { Content } = Layout;
 
@@ -45,6 +47,8 @@ export default function App() {
                   <Route path="/mistakes" element={<MistakeBookPage />} />
                   <Route path="/goals" element={<GoalsTasksPage />} />
                   <Route path="/progress" element={<ProgressDashboardPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </AppContent>
