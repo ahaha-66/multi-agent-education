@@ -20,13 +20,12 @@ import {
 import { 
   UserOutlined, 
   MailOutlined, 
-  PhoneOutlined, 
-  SchoolOutlined,
   TrophyOutlined,
   FireOutlined,
   CalendarOutlined,
   EditOutlined,
   SaveOutlined,
+  BankOutlined,
 } from '@ant-design/icons';
 import { useAppSelector, useAppDispatch } from '../store';
 import { fetchUserProfile, updateUserProfile } from '../store/slices/userSlice';
@@ -206,7 +205,7 @@ export default function ProfilePage() {
                 name="school"
                 label="学校"
               >
-                <Input prefix={<SchoolOutlined />} placeholder="请输入学校名称" />
+                <Input prefix={<BankOutlined />} placeholder="请输入学校名称" />
               </Form.Item>
             </Form>
           </Card>
