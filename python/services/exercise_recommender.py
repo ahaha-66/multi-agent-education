@@ -171,30 +171,56 @@ class ExerciseRecommender:
 
     def _check_answer(self, user_answer: Any, correct_answer: Any, content: dict | None = None) -> bool:
         """检查答案是否正确"""
+        def normalize_answer(answer: Any) -> str:
+            """标准化答案：去除空格、统一小写"""
+            return ''.join(str(answer).strip().lower().split())
+        
         if isinstance(correct_answer, dict) and "value" in correct_answer:
-            correct_value = str(correct_answer["value"]).strip().lower()
-            user_str = str(user_answer).strip().lower()
+            correct_value = normalize_answer(correct_answer["value"])
+            user_str = normalize_answer(user_answer)
             
             if correct_value in ['a', 'b', 'c', 'd', 'e', 'f']:
                 if content and isinstance(content, dict) and "options" in content:
                     options = content["options"]
                     for opt in options:
-                        if isinstance(opt, dict) and opt.get("label", "").strip().lower() == correct_value:
-                            correct_label_value = opt.get("value", "").strip().lower()
+                        if isinstance(opt, dict) and normalize_answer(opt.get("label", "")) == correct_value:
+                            correct_label_value = normalize_answer(opt.get("value", ""))
                             return user_str == correct_label_value
                 
                 return user_str == correct_value
             
+            if ',' in correct_value:
+                correct_parts = sorted([p.strip() for p in correct_value.split(',')])
+                user_parts = sorted([p.strip() for p in user_str.split(',')])
+                return correct_parts == user_parts
+            
             return user_str == correct_value
             
         if isinstance(correct_answer, list):
-            user_str = str(user_answer).strip().lower()
-            return any(
-                str(ans).strip().lower() == user_str
-                for ans in correct_answer
-            )
+            user_str = normalize_answer(user_answer)
             
-        return str(user_answer).strip().lower() == str(correct_answer).strip().lower()
+            for ans in correct_answer:
+                if isinstance(ans, dict) and "value" in ans:
+                    ans_str = normalize_answer(ans["value"])
+                else:
+                    ans_str = normalize_answer(ans)
+                
+                if ',' in ans_str:
+                    ans_parts = sorted([p.strip() for p in ans_str.split(',')])
+                    user_parts = sorted([p.strip() for p in user_str.split(',')])
+                    if ans_parts == user_parts:
+                        return True
+                elif user_str == ans_str:
+                    return True
+            
+            return False
+            
+        if ',' in str(correct_answer):
+            correct_parts = sorted([p.strip().lower() for p in str(correct_answer).split(',')])
+            user_parts = sorted([p.strip().lower() for p in str(user_answer).split(',')])
+            return correct_parts == user_parts
+            
+        return normalize_answer(user_answer) == normalize_answer(correct_answer)
 
     async def record_attempt(
         self,

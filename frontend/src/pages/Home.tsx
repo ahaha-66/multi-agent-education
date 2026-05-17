@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Row, Col, Card, Button, Statistic, Progress, Spin, List } from 'antd';
 import { BookOutlined, ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store';
 import { fetchOverallProgress } from '../store/slices/progressSlice';
 import { fetchCourses } from '../store/slices/courseSlice';
+import { mistakeApi } from '../services/mistakeApi';
+import type { MistakeStatistics } from '../types/mistake';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -16,10 +18,27 @@ export default function HomePage() {
   const { list: courses, loading: coursesLoading } = useAppSelector(
     (state) => state.course
   );
+  
+  const [mistakeStats, setMistakeStats] = useState<MistakeStatistics | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchOverallProgress(learnerId));
     dispatch(fetchCourses());
+    
+    const fetchStats = async () => {
+      setStatsLoading(true);
+      try {
+        const response = await mistakeApi.getStatistics(learnerId);
+        setMistakeStats(response);
+      } catch (error) {
+        console.error('Failed to fetch mistake statistics:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    
+    fetchStats();
   }, [dispatch, learnerId]);
 
   const handleContinueLearning = (courseId: string) => {
@@ -31,7 +50,7 @@ export default function HomePage() {
   };
 
   const totalProgress = overall?.overall_progress || 0;
-  const totalMistakes = 0;
+  const totalMistakes = mistakeStats?.total_mistakes || 0;
 
   return (
     <Spin spinning={progressLoading || coursesLoading}>
