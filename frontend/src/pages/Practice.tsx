@@ -128,8 +128,8 @@ export default function PracticePage() {
                     >
                       <Space direction="vertical" style={{ width: '100%' }}>
                         {exercise.content.options.map((option, index) => (
-                          <Radio key={index} value={option}>
-                            {option}
+                          <Radio key={index} value={option.value}>
+                            {option.label}. {option.value}
                           </Radio>
                         ))}
                       </Space>

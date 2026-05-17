@@ -1,8 +1,13 @@
 export type ExerciseType = 'single_choice' | 'multiple_choice' | 'true_false' | 'fill_blank';
 
+export interface ExerciseOption {
+  label: string;
+  value: string;
+}
+
 export interface ExerciseContent {
   stem: string;
-  options?: string[];
+  options?: ExerciseOption[];
 }
 
 export interface HintLevel {
