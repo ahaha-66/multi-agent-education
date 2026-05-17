@@ -12,6 +12,7 @@ import {
   Modal,
   Typography,
   Divider,
+  Statistic as AntdStatistic,
 } from 'antd';
 import { FileTextOutlined, EyeOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useAppSelector, useAppDispatch } from '../store';
@@ -147,20 +148,20 @@ export default function MistakeBookPage() {
         <Card title="错题统计">
           <Row gutter={[8, 8]}>
             <Col span={24}>
-              <Statistic
+              <AntdStatistic
                 title="总错题数"
                 value={statistics?.total_mistakes || 0}
               />
             </Col>
             <Col span={24}>
-              <Statistic
+              <AntdStatistic
                 title="已解决"
                 value={statistics?.resolved_mistakes || 0}
                 valueStyle={{ color: '#3f8600' }}
               />
             </Col>
             <Col span={24}>
-              <Statistic
+              <AntdStatistic
                 title="未解决"
                 value={statistics?.unresolved_mistakes || 0}
                 valueStyle={{ color: '#cf1322' }}
@@ -264,16 +265,5 @@ export default function MistakeBookPage() {
         )}
       </Modal>
     </Row>
-  );
-}
-
-function Statistic({ title, value, valueStyle }: { title: string; value: number; valueStyle?: React.CSSProperties }) {
-  return (
-    <div>
-      <Text type="secondary">{title}</Text>
-      <div style={{ fontSize: 24, fontWeight: 'bold', marginTop: 4, ...valueStyle }}>
-        {value}
-      </div>
-    </div>
   );
 }
