@@ -127,7 +127,7 @@ class ExerciseRecommender:
             "content": exercise.content,
             "tags": exercise.tags,
             "hint_levels": [
-                {"level": i + 1, "hint": hint.get("hint", "")}
+                {"level": i + 1, "hint": hint.get("hint", "") if isinstance(hint, dict) else hint}
                 for i, hint in enumerate(exercise.hint_levels or [])
             ],
         }

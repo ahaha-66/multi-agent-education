@@ -88,6 +88,12 @@ async def get_course(
     course = result.scalar_one_or_none()
     
     if not course:
+        result = await session.execute(
+            select(Course).where(Course.code == course_id)
+        )
+        course = result.scalar_one_or_none()
+    
+    if not course:
         raise HTTPException(status_code=404, detail="课程不存在")
     
     return CourseInfo(
@@ -120,6 +126,12 @@ async def get_course_catalog(
     course = result.scalar_one_or_none()
     
     if not course:
+        result = await session.execute(
+            select(Course).where(Course.code == course_id)
+        )
+        course = result.scalar_one_or_none()
+    
+    if not course:
         raise HTTPException(status_code=404, detail="课程不存在")
     
     kg_service = KnowledgeGraphService(session)
@@ -146,6 +158,12 @@ async def get_course_knowledge_graph(
         select(Course).where(Course.id == course_id)
     )
     course = result.scalar_one_or_none()
+    
+    if not course:
+        result = await session.execute(
+            select(Course).where(Course.code == course_id)
+        )
+        course = result.scalar_one_or_none()
     
     if not course:
         raise HTTPException(status_code=404, detail="课程不存在")
@@ -183,6 +201,12 @@ async def get_next_exercise(
     course = result.scalar_one_or_none()
     
     if not course:
+        result = await session.execute(
+            select(Course).where(Course.code == course_id)
+        )
+        course = result.scalar_one_or_none()
+    
+    if not course:
         raise HTTPException(status_code=404, detail="课程不存在")
     
     recommender = ExerciseRecommender(session)
@@ -194,7 +218,7 @@ async def get_next_exercise(
     
     exercises = await recommender.recommend_next(
         learner_id=learner_id,
-        course_id=course_id,
+        course_id=course.id,
         knowledge_point_id=knowledge_point_id,
         exclude_exercise_ids=exclude_ids,
         count=count,
