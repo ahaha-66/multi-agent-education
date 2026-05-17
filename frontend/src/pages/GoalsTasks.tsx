@@ -44,19 +44,21 @@ export default function GoalsTasksPage() {
     setCreateModalOpen(true);
   };
 
-  const handleSubmitCreate = (values: any) => {
+  const handleSubmitCreate = async (values: any) => {
     const goalData: LearnerGoalCreate = {
       title: values.title,
       description: values.description,
       targetDate: values.targetDate?.toISOString(),
     };
-    dispatch(createGoal({ learnerId, data: goalData }));
+    await dispatch(createGoal({ learnerId, data: goalData })).unwrap();
+    dispatch(fetchTasks({ learnerId }));
     setCreateModalOpen(false);
     form.resetFields();
   };
 
-  const handleCompleteGoal = (goalId: string) => {
-    dispatch(completeGoal({ learnerId, goalId }));
+  const handleCompleteGoal = async (goalId: string) => {
+    await dispatch(completeGoal({ learnerId, goalId })).unwrap();
+    dispatch(fetchTasks({ learnerId }));
   };
 
   const getStatusTag = (status: string) => {

@@ -38,7 +38,58 @@ class GoalTaskService:
         self.session.add(goal)
         await self.session.commit()
         await self.session.refresh(goal)
+        
+        await self._create_default_tasks(learner_id, goal.id)
+        
         return goal
+    
+    async def _create_default_tasks(
+        self,
+        learner_id: str,
+        goal_id: str
+    ) -> None:
+        now = datetime.utcnow()
+        
+        default_tasks = [
+            {
+                "title": "开始学习相关课程",
+                "description": "浏览课程内容，了解学习目标",
+                "type": "learning",
+                "priority": 1,
+                "order_index": 1
+            },
+            {
+                "title": "完成章节练习",
+                "description": "完成相关章节的练习题",
+                "type": "practice",
+                "priority": 2,
+                "order_index": 2
+            },
+            {
+                "title": "复习知识点",
+                "description": "复习重要知识点，巩固学习成果",
+                "type": "review",
+                "priority": 3,
+                "order_index": 3
+            }
+        ]
+        
+        for task_data in default_tasks:
+            task = LearnerTask(
+                learner_id=learner_id,
+                goal_id=goal_id,
+                title=task_data["title"],
+                description=task_data["description"],
+                type=task_data["type"],
+                status="pending",
+                priority=task_data["priority"],
+                order_index=task_data["order_index"],
+                created_at=now,
+                updated_at=now
+            )
+            self.session.add(task)
+        
+        await self.session.commit()
 
     async def list_goals(
         self,
@@ -118,6 +169,22 @@ class GoalTaskService:
         goal.progress = 1.0
         goal.completed_at = now
         goal.updated_at = now
+        
+        tasks_result = await self.session.execute(
+            select(LearnerTask)
+            .where(
+                and_(
+                    LearnerTask.goal_id == goal_id,
+                    LearnerTask.learner_id == learner_id
+                )
+            )
+        )
+        tasks = list(tasks_result.scalars().all())
+        
+        for task in tasks:
+            task.status = "completed"
+            task.updated_at = now
+        
         await self.session.commit()
         await self.session.refresh(goal)
         return goal
