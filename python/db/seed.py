@@ -303,6 +303,11 @@ async def main():
     args = parser.parse_args()
 
     engine = create_engine(args.database_url)
+    
+    # 先创建所有表
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all, checkfirst=True)
+    
     sessionmaker = create_sessionmaker(engine)
 
     async with sessionmaker() as session:

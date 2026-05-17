@@ -68,35 +68,50 @@ class Attempt(Base):
     __tablename__ = "attempt"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
-    learner_id: Mapped[str] = mapped_column(String, index=True)
-    knowledge_id: Mapped[str] = mapped_column(String, index=True)
-    exercise_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    learner_id: Mapped[str] = mapped_column(String)
+    knowledge_id: Mapped[str] = mapped_column(String)
+    exercise_id: Mapped[str | None] = mapped_column(String, nullable=True)
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False)
     time_spent_seconds: Mapped[float] = mapped_column(Float, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, index=True)
-    correlation_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    correlation_id: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    __table_args__ = (
+        Index("ix_attempt_learner_id", "learner_id"),
+        Index("ix_attempt_knowledge_id", "knowledge_id"),
+        Index("ix_attempt_exercise_id", "exercise_id"),
+        Index("ix_attempt_created_at", "created_at"),
+        Index("ix_attempt_correlation_id", "correlation_id"),
+    )
 
 
 class EventLog(Base):
     __tablename__ = "event_log"
 
     event_id: Mapped[str] = mapped_column(String, primary_key=True)
-    type: Mapped[str] = mapped_column(String, index=True)
+    type: Mapped[str] = mapped_column(String)
     source: Mapped[str] = mapped_column(String)
-    learner_id: Mapped[str] = mapped_column(String, index=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow, index=True)
-    correlation_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    learner_id: Mapped[str] = mapped_column(String)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+    correlation_id: Mapped[str | None] = mapped_column(String, nullable=True)
     status: Mapped[str] = mapped_column(String, default="ok")
     payload: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    __table_args__ = (
+        Index("ix_event_log_type", "type"),
+        Index("ix_event_log_learner_id", "learner_id"),
+        Index("ix_event_log_timestamp", "timestamp"),
+        Index("ix_event_log_correlation_id", "correlation_id"),
+    )
 
 
 class Course(Base):
     __tablename__ = "course"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    code: Mapped[str] = mapped_column(String, unique=True, index=True)
+    code: Mapped[str] = mapped_column(String, unique=True)
     name: Mapped[str] = mapped_column(String)
-    subject: Mapped[str] = mapped_column(String, index=True)
+    subject: Mapped[str] = mapped_column(String)
     version: Mapped[str] = mapped_column(String, default="1.0")
     grade_level: Mapped[int | None] = mapped_column(Integer, nullable=True)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -106,12 +121,17 @@ class Course(Base):
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
+    __table_args__ = (
+        Index("ix_course_code", "code"),
+        Index("ix_course_subject", "subject"),
+    )
+
 
 class Chapter(Base):
     __tablename__ = "chapter"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    course_id: Mapped[str] = mapped_column(String, index=True)
+    course_id: Mapped[str] = mapped_column(String)
     code: Mapped[str] = mapped_column(String)
     name: Mapped[str] = mapped_column(String)
     order_index: Mapped[int] = mapped_column(Integer, default=0)
@@ -128,9 +148,9 @@ class KnowledgePoint(Base):
     __tablename__ = "knowledge_point"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    chapter_id: Mapped[str] = mapped_column(String, index=True)
-    course_id: Mapped[str] = mapped_column(String, index=True)
-    code: Mapped[str] = mapped_column(String, unique=True, index=True)
+    chapter_id: Mapped[str] = mapped_column(String)
+    course_id: Mapped[str] = mapped_column(String)
+    code: Mapped[str] = mapped_column(String, unique=True)
     name: Mapped[str] = mapped_column(String)
     difficulty: Mapped[float] = mapped_column(Float, default=0.5)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -146,6 +166,7 @@ class KnowledgePoint(Base):
     __table_args__ = (
         Index("ix_knowledge_point_chapter_id", "chapter_id"),
         Index("ix_knowledge_point_course_id", "course_id"),
+        Index("ix_knowledge_point_code", "code"),
     )
 
 
@@ -153,8 +174,8 @@ class KnowledgeEdge(Base):
     __tablename__ = "knowledge_edge"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    source_kp_id: Mapped[str] = mapped_column(String, index=True)
-    target_kp_id: Mapped[str] = mapped_column(String, index=True)
+    source_kp_id: Mapped[str] = mapped_column(String)
+    target_kp_id: Mapped[str] = mapped_column(String)
     relation_type: Mapped[str] = mapped_column(String, default="prerequisite")
     strength: Mapped[float] = mapped_column(Float, default=1.0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
@@ -169,10 +190,10 @@ class Exercise(Base):
     __tablename__ = "exercise"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    knowledge_point_id: Mapped[str] = mapped_column(String, index=True)
-    chapter_id: Mapped[str] = mapped_column(String, index=True)
-    course_id: Mapped[str] = mapped_column(String, index=True)
-    code: Mapped[str] = mapped_column(String, unique=True, index=True)
+    knowledge_point_id: Mapped[str] = mapped_column(String)
+    chapter_id: Mapped[str] = mapped_column(String)
+    course_id: Mapped[str] = mapped_column(String)
+    code: Mapped[str] = mapped_column(String, unique=True)
     type: Mapped[str] = mapped_column(String, default="single_choice")
     difficulty: Mapped[float] = mapped_column(Float, default=0.5)
     content: Mapped[dict] = mapped_column(JSON, default=dict)
@@ -191,35 +212,37 @@ class Exercise(Base):
         Index("ix_exercise_kp_id", "knowledge_point_id"),
         Index("ix_exercise_chapter_id", "chapter_id"),
         Index("ix_exercise_course_id", "course_id"),
+        Index("ix_exercise_code", "code"),
     )
 
 
 class LearnerExerciseHistory(Base):
     __tablename__ = "learner_exercise_history"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
-    learner_id: Mapped[str] = mapped_column(String, index=True)
-    exercise_id: Mapped[str] = mapped_column(String, index=True)
+    learner_id: Mapped[str] = mapped_column(String)
+    exercise_id: Mapped[str] = mapped_column(String)
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False)
     attempt_count: Mapped[int] = mapped_column(Integer, default=1)
     last_attempt_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     first_attempt_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    correlation_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    correlation_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
     __table_args__ = (
         Index("ix_learner_exercise_learner_id", "learner_id"),
         Index("ix_learner_exercise_exercise_id", "exercise_id"),
+        Index("ix_learner_exercise_correlation_id", "correlation_id"),
     )
 
 
 class LearnerGoal(Base):
     __tablename__ = "learner_goal"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
-    learner_id: Mapped[str] = mapped_column(String, index=True)
-    course_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    learner_id: Mapped[str] = mapped_column(String)
+    course_id: Mapped[str | None] = mapped_column(String, nullable=True)
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     target_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    status: Mapped[str] = mapped_column(String, default="pending", index=True)
+    status: Mapped[str] = mapped_column(String, default="pending")
     progress: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
@@ -227,20 +250,21 @@ class LearnerGoal(Base):
 
     __table_args__ = (
         Index("ix_learner_goal_learner_id", "learner_id"),
+        Index("ix_learner_goal_status", "status"),
     )
 
 
 class LearnerTask(Base):
     __tablename__ = "learner_task"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
-    goal_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
-    learner_id: Mapped[str] = mapped_column(String, index=True)
-    knowledge_point_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
-    exercise_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    goal_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    learner_id: Mapped[str] = mapped_column(String)
+    knowledge_point_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    exercise_id: Mapped[str | None] = mapped_column(String, nullable=True)
     title: Mapped[str] = mapped_column(String)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     type: Mapped[str] = mapped_column(String, default="learn")
-    status: Mapped[str] = mapped_column(String, default="pending", index=True)
+    status: Mapped[str] = mapped_column(String, default="pending")
     priority: Mapped[int] = mapped_column(Integer, default=3)
     due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     order_index: Mapped[int] = mapped_column(Integer, default=0)
@@ -248,16 +272,20 @@ class LearnerTask(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
     __table_args__ = (
+        Index("ix_learner_task_goal_id", "goal_id"),
         Index("ix_learner_task_learner_id", "learner_id"),
+        Index("ix_learner_task_kp_id", "knowledge_point_id"),
+        Index("ix_learner_task_exercise_id", "exercise_id"),
+        Index("ix_learner_task_status", "status"),
     )
 
 
 class MistakeRecord(Base):
     __tablename__ = "mistake_record"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid_str)
-    learner_id: Mapped[str] = mapped_column(String, index=True)
-    exercise_id: Mapped[str] = mapped_column(String, index=True)
-    knowledge_point_id: Mapped[str] = mapped_column(String, index=True)
+    learner_id: Mapped[str] = mapped_column(String)
+    exercise_id: Mapped[str] = mapped_column(String)
+    knowledge_point_id: Mapped[str] = mapped_column(String)
     first_wrong_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     last_wrong_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     wrong_count: Mapped[int] = mapped_column(Integer, default=1)
