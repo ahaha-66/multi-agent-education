@@ -6,10 +6,8 @@
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-
-from api.main import app
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +30,7 @@ class KnowledgeGraphInitResponse(BaseModel):
 @router.post("/knowledge-graph/init", response_model=KnowledgeGraphInitResponse)
 async def init_knowledge_graph(
     request: KnowledgeGraphInitRequest,
+    app_request: Request,
 ):
     """
     初始化课程知识图谱
@@ -45,7 +44,7 @@ async def init_knowledge_graph(
     Returns:
         知识图谱初始化结果
     """
-    orchestrator = getattr(app.state, "orchestrator", None)
+    orchestrator = getattr(app_request.app.state, "orchestrator", None)
     
     if not orchestrator:
         raise HTTPException(
@@ -73,13 +72,13 @@ async def init_knowledge_graph(
 
 
 @router.get("/knowledge-graph/status")
-async def get_knowledge_graph_status():
+async def get_knowledge_graph_status(app_request: Request):
     """
     获取知识图谱状态
     
     返回当前已加载的知识图谱信息
     """
-    orchestrator = getattr(app.state, "orchestrator", None)
+    orchestrator = getattr(app_request.app.state, "orchestrator", None)
     
     if not orchestrator:
         raise HTTPException(
