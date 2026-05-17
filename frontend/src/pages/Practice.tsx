@@ -28,6 +28,7 @@ import {
   clearAnswer,
   incrementHintLevel,
 } from '../store/slices/exerciseSlice';
+import { fetchCourseProgress } from '../store/slices/progressSlice';
 
 const { Title, Text, Paragraph } = Typography;
 const { Group: RadioGroup } = Radio;
@@ -64,9 +65,9 @@ export default function PracticePage() {
     dispatch(setAnswer(e.target.value));
   };
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (exercise) {
-      dispatch(
+      await dispatch(
         submitAnswer({
           request: {
             exercise_id: exercise.id,
@@ -74,7 +75,11 @@ export default function PracticePage() {
           },
           learnerId,
         })
-      );
+      ).unwrap();
+      
+      if (courseId) {
+        dispatch(fetchCourseProgress({ learnerId, courseId }));
+      }
     }
   };
 

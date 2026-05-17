@@ -27,6 +27,7 @@ from db.models import Course
 from services.knowledge_graph_service import KnowledgeGraphService
 from services.exercise_recommender import ExerciseRecommender
 from services.mistake_service import MistakeService
+from db.models import Exercise, KnowledgeState
 
 
 logger = logging.getLogger(__name__)
@@ -287,6 +288,45 @@ async def verify_answer(
                 exercise_id=request.exercise_id,
                 answer=request.answer,
             )
+        
+        exercise_result = await session.execute(
+            select(Exercise).where(Exercise.id == request.exercise_id)
+        )
+        exercise = exercise_result.scalar_one_or_none()
+        
+        if exercise and exercise.knowledge_point_id:
+            knowledge_state_result = await session.execute(
+                select(KnowledgeState)
+                .where(
+                    KnowledgeState.learner_id == learner_id,
+                    KnowledgeState.knowledge_id == exercise.knowledge_point_id
+                )
+            )
+            knowledge_state = knowledge_state_result.scalar_one_or_none()
+            
+            if knowledge_state:
+                knowledge_state.attempts += 1
+                if result["is_correct"]:
+                    knowledge_state.correct_count += 1
+                    knowledge_state.wrong_streak = 0
+                    knowledge_state.mastery = min(1.0, knowledge_state.mastery + 0.15)
+                else:
+                    knowledge_state.wrong_streak += 1
+                    knowledge_state.mastery = max(0.0, knowledge_state.mastery - 0.1)
+            else:
+                from datetime import datetime
+                knowledge_state = KnowledgeState(
+                    learner_id=learner_id,
+                    knowledge_id=exercise.knowledge_point_id,
+                    attempts=1,
+                    correct_count=1 if result["is_correct"] else 0,
+                    wrong_streak=0 if result["is_correct"] else 1,
+                    mastery=0.25 if result["is_correct"] else 0.05,
+                    last_attempt=datetime.utcnow()
+                )
+                session.add(knowledge_state)
+    
+    await session.commit()
     
     return AnswerVerificationResponse(**result)
 
