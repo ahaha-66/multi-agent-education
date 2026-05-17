@@ -206,7 +206,7 @@ export default function PracticePage() {
                       </Space>
                     )
                   }
-                  subTitle={`正确答案: ${feedback.correct_answer?.value || feedback.correct_answer}`}
+                  message={`正确答案: ${feedback.correct_answer?.value || feedback.correct_answer}`}
                   extra={
                     feedback.analysis && (
                       <Card type="inner" title="解析">
