@@ -26,6 +26,7 @@ from config.settings import get_db_session
 from db.models import Course
 from services.knowledge_graph_service import KnowledgeGraphService
 from services.exercise_recommender import ExerciseRecommender
+from services.mistake_service import MistakeService
 
 
 logger = logging.getLogger(__name__)
@@ -254,6 +255,14 @@ async def verify_answer(
             exercise_id=request.exercise_id,
             is_correct=result["is_correct"],
         )
+        
+        if not result["is_correct"]:
+            mistake_service = MistakeService(session)
+            await mistake_service.record_mistake(
+                learner_id=learner_id,
+                exercise_id=request.exercise_id,
+                answer=request.answer,
+            )
     
     return AnswerVerificationResponse(**result)
 

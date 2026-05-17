@@ -6,6 +6,7 @@ import {
   Card,
   Button,
   Radio,
+  Input,
   Result,
   Spin,
   Typography,
@@ -135,6 +136,17 @@ export default function PracticePage() {
                       </Space>
                     </RadioGroup>
                   )}
+
+                {(exercise.type === 'fill_blank' || exercise.type === 'true_false' || !exercise.content.options) && (
+                  <Input
+                    type="text"
+                    value={answer}
+                    onChange={(e) => dispatch(setAnswer(e.target.value))}
+                    disabled={!!feedback}
+                    placeholder="请输入答案"
+                    style={{ width: '50%', marginTop: 16 }}
+                  />
+                )}
 
                 {currentHint && (
                   <>
