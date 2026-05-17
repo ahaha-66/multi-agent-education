@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.models import LearnerGoal, LearnerTask
+from db.models import LearnerGoal, LearnerTask, Course, Chapter, KnowledgePoint
 from api.schemas.progress_schemas import (
     LearnerGoalBrief,
     LearnerGoalCreate,
@@ -30,7 +30,7 @@ class GoalTaskService:
             description=data.description,
             course_id=data.course_id,
             target_date=data.target_date,
-            status="pending",
+            status="active",
             progress=0.0,
             created_at=now,
             updated_at=now
@@ -39,22 +39,107 @@ class GoalTaskService:
         await self.session.commit()
         await self.session.refresh(goal)
         
-        await self._create_default_tasks(learner_id, goal.id)
+        await self._create_course_tasks(learner_id, goal.id, data.course_id)
         
         return goal
     
-    async def _create_default_tasks(
+    async def _create_course_tasks(
         self,
         learner_id: str,
-        goal_id: str
+        goal_id: str,
+        course_id: Optional[str]
     ) -> None:
         now = datetime.utcnow()
         
+        if course_id:
+            course_result = await self.session.execute(
+                select(Course).where(Course.id == course_id)
+            )
+            course = course_result.scalar_one_or_none()
+            
+            if course:
+                chapters_result = await self.session.execute(
+                    select(Chapter).where(Chapter.course_id == course_id).order_by(Chapter.order_index).limit(3)
+                )
+                chapters = list(chapters_result.scalars().all())
+                
+                tasks = []
+                
+                if chapters:
+                    first_chapter = chapters[0]
+                    
+                    kps_result = await self.session.execute(
+                        select(KnowledgePoint)
+                        .where(KnowledgePoint.chapter_id == first_chapter.id)
+                        .order_by(KnowledgePoint.order_index)
+                        .limit(3)
+                    )
+                    knowledge_points = list(kps_result.scalars().all())
+                    
+                    for idx, kp in enumerate(knowledge_points, 1):
+                        task = LearnerTask(
+                            learner_id=learner_id,
+                            goal_id=goal_id,
+                            title=f"学习知识点：{kp.name}",
+                            description=f"学习《{first_chapter.name}》章节的知识点",
+                            knowledge_point_id=kp.id,
+                            type="learn",
+                            status="pending",
+                            priority=idx,
+                            order_index=idx,
+                            created_at=now,
+                            updated_at=now
+                        )
+                        self.session.add(task)
+                        tasks.append(task)
+                    
+                    practice_task = LearnerTask(
+                        learner_id=learner_id,
+                        goal_id=goal_id,
+                        title=f"完成《{first_chapter.name}》章节练习",
+                        description=f"练习{first_chapter.name}章节的练习题",
+                        type="practice",
+                        status="pending",
+                        priority=len(tasks) + 1,
+                        order_index=len(tasks) + 1,
+                        created_at=now,
+                        updated_at=now
+                    )
+                    self.session.add(practice_task)
+                    
+                    review_task = LearnerTask(
+                        learner_id=learner_id,
+                        goal_id=goal_id,
+                        title=f"复习{course.name}",
+                        description=f"复习{course.name}的重要知识点",
+                        type="review",
+                        status="pending",
+                        priority=len(tasks) + 2,
+                        order_index=len(tasks) + 2,
+                        created_at=now,
+                        updated_at=now
+                    )
+                    self.session.add(review_task)
+                else:
+                    await self._create_generic_tasks(learner_id, goal_id, now)
+            else:
+                await self._create_generic_tasks(learner_id, goal_id, now)
+        else:
+            await self._create_generic_tasks(learner_id, goal_id, now)
+        
+        await self.session.commit()
+    
+    async def _create_generic_tasks(
+        self,
+        learner_id: str,
+        goal_id: str,
+        now: datetime
+    ) -> None:
         default_tasks = [
             {
                 "title": "开始学习相关课程",
                 "description": "浏览课程内容，了解学习目标",
-                "type": "learning",
+                "type": "learn",
                 "priority": 1,
                 "order_index": 1
             },
@@ -88,8 +173,6 @@ class GoalTaskService:
                 updated_at=now
             )
             self.session.add(task)
-        
-        await self.session.commit()
 
     async def list_goals(
         self,
