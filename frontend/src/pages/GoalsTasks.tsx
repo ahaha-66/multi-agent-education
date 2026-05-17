@@ -106,7 +106,7 @@ export default function GoalsTasksPage() {
                       : []
                   }
                 >
-                  <Text type="secondary" ellipsis={{ rows: 3 }}>
+                  <Text type="secondary" ellipsis>
                     {goal.description}
                   </Text>
                   <Progress
