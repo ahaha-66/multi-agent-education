@@ -173,6 +173,7 @@ class CourseContentSeeder:
                 "id": kp_id,
                 "code": kp_code,
                 "prerequisites": kp_data.get("prerequisites", []),
+                "exercises": kp_data.get("exercises", []),
             })
 
             for prereq_code in kp_data.get("prerequisites", []):
