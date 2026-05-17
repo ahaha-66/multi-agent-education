@@ -4,7 +4,7 @@ import type {
   AnswerVerificationRequest,
   AnswerVerificationResponse,
 } from '../types/exercise';
-import { courseApi } from '../services/courseApi';
+import { courseApi } from '../../services/courseApi';
 
 interface ExerciseState {
   current: Exercise | null;

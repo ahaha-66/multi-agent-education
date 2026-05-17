@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { OverallProgress, CourseProgress } from '../types/progress';
-import { progressApi } from '../services/progressApi';
+import { progressApi } from '../../services/progressApi';
 
 interface ProgressState {
   overall: OverallProgress | null;

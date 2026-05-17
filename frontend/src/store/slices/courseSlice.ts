@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { Course, CourseCatalog, KnowledgeGraph, Exercise } from '../types/course';
-import { courseApi } from '../services/courseApi';
+import { courseApi } from '../../services/courseApi';
 
 interface CourseState {
   list: Course[];

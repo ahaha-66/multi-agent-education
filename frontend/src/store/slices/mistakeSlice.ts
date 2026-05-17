@@ -4,7 +4,7 @@ import type {
   MistakeRecordDetail,
   MistakeStatistics,
 } from '../types/mistake';
-import { mistakeApi } from '../services/mistakeApi';
+import { mistakeApi } from '../../services/mistakeApi';
 
 interface MistakeState {
   list: PaginatedMistakes | null;

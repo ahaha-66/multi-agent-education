@@ -6,7 +6,7 @@ import type {
   LearnerTask,
   LearnerTaskCreate,
 } from '../types/goal';
-import { goalTaskApi } from '../services/goalTaskApi';
+import { goalTaskApi } from '../../services/goalTaskApi';
 
 interface GoalState {
   goals: LearnerGoal[];

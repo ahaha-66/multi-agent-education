@@ -16,7 +16,7 @@ from pathlib import Path
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.learner_model import KnowledgeState as KnowledgeStateModel
+
 from db.base import Base
 from db.models import (
     Chapter,
