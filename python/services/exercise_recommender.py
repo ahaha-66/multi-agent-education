@@ -161,7 +161,7 @@ class ExerciseRecommender:
                 "analysis": None,
             }
             
-        is_correct = self._check_answer(user_answer, exercise.answer)
+        is_correct = self._check_answer(user_answer, exercise.answer, exercise.content)
         
         return {
             "is_correct": is_correct,
@@ -169,10 +169,23 @@ class ExerciseRecommender:
             "analysis": exercise.analysis,
         }
 
-    def _check_answer(self, user_answer: Any, correct_answer: Any) -> bool:
+    def _check_answer(self, user_answer: Any, correct_answer: Any, content: dict | None = None) -> bool:
         """检查答案是否正确"""
         if isinstance(correct_answer, dict) and "value" in correct_answer:
-            return str(user_answer).strip().lower() == str(correct_answer["value"]).strip().lower()
+            correct_value = str(correct_answer["value"]).strip().lower()
+            user_str = str(user_answer).strip().lower()
+            
+            if correct_value in ['a', 'b', 'c', 'd', 'e', 'f']:
+                if content and isinstance(content, dict) and "options" in content:
+                    options = content["options"]
+                    for opt in options:
+                        if isinstance(opt, dict) and opt.get("label", "").strip().lower() == correct_value:
+                            correct_label_value = opt.get("value", "").strip().lower()
+                            return user_str == correct_label_value
+                
+                return user_str == correct_value
+            
+            return user_str == correct_value
             
         if isinstance(correct_answer, list):
             user_str = str(user_answer).strip().lower()
